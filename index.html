@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Observatoire</title>
+<meta name="description" content="Le ciel au-dessus de toi, ce soir : météo, carte, ce qu'on voit à l'œil nu, aux jumelles et au télescope.">
+<meta name="theme-color" content="#06131a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icone.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icone-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header id="haut">
+  <button type="button" id="lieu-b" aria-label="Changer de lieu">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>
+    <span><b id="lieu-n">Cambrai</b><small id="lieu-s"></small></span>
+  </button>
+  <div id="horloge"><b id="hl-h"></b><small id="hl-j"></small></div>
+</header>
+<div id="visite" hidden><span id="visite-t"></span><button type="button" id="visite-b">Rentrer chez moi</button></div>
+
+<nav id="onglets" aria-label="Écrans">
+  <button type="button" data-p="soir" class="p"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/></svg><span>Ce soir</span></button>
+  <button type="button" data-p="carte"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg><span>Carte</span></button>
+  <button type="button" data-p="voir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c4-6.500 16-6.500 20 0-4 6.500-16 6.500-20 0z"/><circle cx="12" cy="12" r="3"/></svg><span>À voir</span></button>
+  <button type="button" data-p="jeux"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6-5.400-3-5.400 3 1.200-6L3.300 9.300l6.100-.700z"/></svg><span>Jeux</span></button>
+</nav>
+
+<main>
+<!-- ============ Ce soir ============ -->
+<section id="p-soir">
+  <div class="bloc" id="verdict">
+    <svg id="jauge" viewBox="0 0 150 150" role="img" aria-label="Note du ciel"><g id="j-grad"></g>
+      <circle id="j-arc" cx="75" cy="75" r="60" fill="none" stroke-width="8" stroke-dasharray="377" stroke-dashoffset="377" transform="rotate(-90 75 75)"/>
+      <text id="j-n" x="75" y="88" text-anchor="middle">0</text><text id="j-s" x="75" y="108" text-anchor="middle">sur 100</text></svg>
+    <div id="v-txt">
+      <p id="v-quand"></p>
+      <h1 id="v-titre"></h1>
+      <p id="v-detail"></p>
+      <p id="v-creneau"></p>
+      <div class="rangee"><button type="button" id="v-carte" class="p">Voir le ciel à cette heure</button><button type="button" id="v-maj">Actualiser la météo</button></div>
+      <p class="note" id="v-meteo"></p>
+    </div>
+  </div>
+  <div class="grille">
+    <div class="bloc" id="b-heures"><h2>La nuit, heure par heure</h2><div id="heures"></div><p id="h-note"></p><p class="note">Le gris descend avec les nuages, le point signale la Lune levée. Touche une heure pour son détail.</p></div>
+    <div class="bloc"><h2 id="top-t">À voir ce soir</h2><div id="top"></div><button type="button" id="top-plus" class="large">Tout ce qu’on peut voir</button></div>
+    <div class="bloc"><h2>Prochains rendez-vous</h2><div id="cd"></div><div id="rdv"></div></div>
+    <div class="bloc" id="b-nuits"><h2>Les 30 prochaines nuits</h2>
+      <div id="bars"></div><div class="ax" id="ax"><span></span><span></span><span></span></div>
+      <div id="info"></div>
+      <div class="rangee"><button type="button" id="b0">Ce soir</button><button type="button" id="bb" class="clair">Meilleure nuit</button><button type="button" id="bp" aria-label="Nuit précédente">Précédente</button><button type="button" id="bn" aria-label="Nuit suivante">Suivante</button></div>
+      <p class="note" id="b-note"></p></div>
+    
+  </div>
+  <p class="note" id="credit">Météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Pour l’obtenir, ta position arrondie au kilomètre est envoyée à ce service ; rien d’autre ne quitte ton appareil.</p>
+</section>
+
+<!-- ============ Carte ============ -->
+<section id="p-carte" hidden>
+  <div class="deux">
+    <div class="bloc" id="c-g"><canvas id="ciel" width="1200" height="1200" aria-label="Carte du ciel"></canvas></div>
+    <div class="bloc" id="c-d">
+      <div id="c-t"><div><div class="heure" id="c-h"></div><div id="c-j"></div></div><button type="button" id="c-now">Maintenant</button></div>
+      <p id="c-f"></p>
+      <input id="c-sl" type="range" min="0" max="100" step="1" aria-label="Heure de la nuit"><div class="ticks" id="c-ax"></div>
+      <div class="rangee" id="c-bt"><button type="button" id="c-play" class="clair">Lancer la nuit</button><button type="button" data-j="0">Ce soir</button><button type="button" data-j="1">Demain</button><button type="button" id="c-pluie"></button></div>
+      <div id="c-ls"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ À voir ============ -->
+<section id="p-voir" hidden>
+  <div class="bloc" id="o-tete">
+    <div><div class="heure" id="o-h"></div><div id="o-w"></div></div>
+    <div id="o-pr"></div>
+  </div>
+  <div id="o-in"></div>
+  <div class="bloc" id="o-regl">
+    <div class="choix"><label>Ton ciel</label><div class="seg" id="o-sk"><button type="button">Ville</button><button type="button">Village</button><button type="button">Campagne</button></div></div>
+    <div id="o-z"><button type="button" id="o-now">Maintenant</button><div class="curseur"><input type="range" id="o-tr" min="0" max="1000" aria-label="Heure de la nuit"><div class="ticks" id="o-tk"></div></div></div>
+  </div>
+  <div class="deux">
+    <div class="bloc" id="o-m"><div class="seg" id="o-f"><button type="button">Tout</button><button type="button">Système solaire</button><button type="button">Étoiles</button><button type="button">Ciel profond</button></div><div id="o-ls"></div></div>
+    <div class="bloc" id="o-fiche">
+      <div id="o-v"><canvas id="oeil" width="1020" height="1020" aria-label="Vue simulée dans l’instrument"></canvas></div>
+      <div id="o-r"><div id="o-q"></div><h1 id="o-n"></h1><p id="o-e"></p>
+        <div id="o-d"><div id="o-co"></div><div id="o-al"></div></div><div id="o-cu"></div>
+        <div class="rangee"><button type="button" id="o-sn"></button><button type="button" id="o-su" class="clair">Surprends-moi</button><button type="button" id="o-vi">Viser avec le téléphone</button></div>
+        <p class="note" id="o-no"></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Jeux ============ -->
+<section id="p-jeux" hidden>
+  <div class="grille">
+    <div class="bloc" id="g-niv"><h2>Ton niveau</h2><div id="g-lv"></div><div class="barre" id="g-bar"></div><div id="g-xp"></div><div id="g-sr"></div></div>
+    <div class="bloc" id="g-defi"><h2>Défi du soir</h2><p id="g-tx"></p><div id="g-pt"></div>
+      <div class="rangee"><button type="button" id="g-go" class="clair">Tirer un défi</button><button type="button" id="g-ok" class="p">Réussi !</button></div></div>
+    <div class="bloc" id="g-quiz"><h2>Quiz éclair</h2><p id="q-q"></p><div id="q-r"></div><div id="q-s"></div>
+      <div class="rangee"><button type="button" id="q-go" class="clair">Lancer le quiz</button></div></div>
+    <div class="bloc" id="g-voy"><h2>Voyage express</h2><p class="note">Le ciel d’ailleurs, en ce moment, avec sa météo.</p><div id="g-vl"></div></div>
+    <div class="bloc" id="g-voeu"><h2>Étoile filante</h2><p class="note" id="g-vt">Besoin d’un vœu ? Il en passe une sur demande.</p><div class="rangee"><button type="button" id="g-vb" class="clair">Fais un vœu</button></div></div>
+    <div class="bloc" id="g-bad"><h2>Insignes</h2><div id="g-bl"></div></div>
+    <div class="bloc" id="g-alb"><h2>Album du ciel</h2><div id="g-ac"></div><div id="g-al"></div></div>
+  </div>
+</section>
+</main>
+
+<!-- ============ Lieu ============ -->
+<div id="feuille" hidden>
+  <div id="f-in" role="dialog" aria-modal="true" aria-labelledby="f-t">
+    <div id="f-tete"><h1 id="f-t">Où observes-tu ?</h1><button type="button" id="f-x" aria-label="Fermer">Fermer</button></div>
+    <button type="button" id="f-gps" class="p large">Utiliser ma position</button>
+    <label class="coche"><input type="checkbox" id="f-suivi"><span>Suivre ma position en direct pendant que l’appli est ouverte</span></label>
+    <p class="note" id="f-msg"></p>
+    <form id="f-form"><label for="f-q">Ou cherche une ville</label><div class="rangee"><input id="f-q" type="search" autocomplete="off" placeholder="Lyon, Montréal, Dakar…"><button type="submit">Chercher</button></div></form>
+    <div id="f-res"></div>
+    <h2 id="f-ft">Tes lieux</h2><div id="f-fav"></div>
+    <p class="note">La position reste sur ton appareil. Seule sa version arrondie au kilomètre part chez Open-Meteo pour la météo, et le nom que tu tapes pour trouver une ville.</p>
+  </div>
+</div>
+
+<!-- ============ Viseur ============ -->
+<div id="vis" hidden><canvas id="vis-c"></canvas><div id="vis-t"></div><button type="button" id="vis-x">Fermer</button></div>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+<div id="bulle" role="status" hidden></div>
+<script src="astro.js"></script>
+<script src="catalogue.js"></script>
+<script src="dessin.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

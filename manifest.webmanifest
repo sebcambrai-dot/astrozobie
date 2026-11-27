@@ -1,0 +1,17 @@
+{
+  "name": "Observatoire",
+  "short_name": "Observatoire",
+  "description": "Le ciel au-dessus de toi, ce soir : météo, carte, ce qu'on voit à l'œil nu, aux jumelles et au télescope.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#06131a",
+  "theme_color": "#06131a",
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
