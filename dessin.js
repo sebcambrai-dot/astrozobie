@@ -4,6 +4,9 @@ var CHAMP = [12, 6.5, 1.2];   /* largeur de la vue en degrés : œil nu, jumelle
 var ASTRES = [['lu', 'Lune', '#f4f1e4'], ['ve', 'Vénus', '#fff6c9'], ['ju', 'Jupiter', '#f3c98b'], ['sa', 'Saturne', '#e6d59a'], ['ma', 'Mars', '#ff8a5c'], ['me', 'Mercure', '#c9c9d6']];
 
 /* ---------- vue dans l'instrument : toile de 340 unités de côté ---------- */
+/* diamètre apparent des planètes, en secondes d'arc à une unité astronomique : au télescope, elles gardent leurs tailles relatives */
+var DIA = { me: 6.74, ve: 16.92, ma: 9.36, ju: 196.9, sa: 165.6, ur: 70.5, ne: 68.3 };
+function rayonTel(k, p) { return Math.max(2.6, Math.min(60, DIA[k] / (p.D || 1) * .8)); }
 function peindre(g, o, p, z, ins, T) {
   var sd = o.n.length * 977 + o.n.charCodeAt(1) * 31, i, a, b, r, h, f, u = 340 / (CHAMP[ins] * 60), P2 = Math.PI * 2, W = '255,255,255', tel = ins == 2;
   function rnd() { sd = (sd * 16807) % 2147483647; return sd / 2147483647; }
@@ -31,21 +34,24 @@ function peindre(g, o, p, z, ins, T) {
       g.restore(); shade(r, (1 - C(a)) / 2, a > 180);
     }
     else if (o.k == 'ju') {
-      r = [2.8, 3.4, 16][ins]; if (!tel) blob(14, 14, '243,203,139', .35); dot(0, 0, r, '#ecd3a6');
-      if (tel) { g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); JU.forEach(function (q) { g.fillStyle = q[2]; g.globalAlpha = .75; g.fillRect(-r, q[0], 2 * r, q[1]); }); g.restore(); limb(r); }
-      if (ins) moons(T).forEach(function (q) { f = Math.abs(q); if (f > 1) dot((q > 0 ? -1 : 1) * (tel ? r + (f - 1) * 5.2 : f * 2.1), 0, tel ? 1.7 : 1, '#f4efe4'); });
+      r = tel ? rayonTel('ju', p) : [2.8, 3.4][ins]; if (!tel) blob(14, 14, '243,203,139', .35); dot(0, 0, r, '#ecd3a6');
+      if (tel) { g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); g.scale(r / 16, r / 16); JU.forEach(function (q) { g.fillStyle = q[2]; g.globalAlpha = .75; g.fillRect(-16, q[0], 32, q[1]); }); g.restore(); limb(r); }
+      /* vue à l'endroit, nord en haut : l'ouest est à droite */
+      if (ins) moons(T).forEach(function (q) { f = Math.abs(q); if (f > 1) dot((q > 0 ? 1 : -1) * (tel ? r + (f - 1) * 5 : f * 2.1), 0, tel ? 1.7 : 1, '#f4efe4'); });
     }
     else if (o.k == 'sa') {
       if (tel) {
+        g.save(); r = rayonTel('sa', p) / 26; g.scale(r, r);
         f = Math.abs(S(ring(p))); h = function (a, b) { AN.forEach(function (q) { g.strokeStyle = q[1]; g.lineWidth = Math.max(.7, q[2] * Math.min(1, f * 3.2)); g.beginPath(); g.ellipse(0, 0, q[0], Math.max(.5, q[0] * f), 0, a, b); g.stroke(); }); }; h(Math.PI, P2);
         g.save(); g.scale(1, .92); g.beginPath(); g.arc(0, 0, 26, 0, 7); g.clip(); dot(0, 0, 26, '#e6d3a0'); SA.forEach(function (q) { g.fillStyle = q[2]; g.globalAlpha = .6; g.fillRect(-26, q[0], 52, q[1]); }); g.globalAlpha = 1; limb(26); g.restore(); h(0, Math.PI);
+        g.restore();
       }
       else { blob(12, 12, '230,213,154', .35); g.fillStyle = o.c; g.beginPath(); g.ellipse(0, 0, ins ? 4 : 2.4, 2.4, 0, 0, 7); g.fill(); }
     }
     else if (o.k) {
-      r = tel ? { me: 12, ve: 26, ma: 15, ur: 6, ne: 4 }[o.k] : o.mi ? 1.1 : o.k == 've' ? 3.4 : 2.1; if (!tel && !o.mi) blob(r * 5, r * 5, W, .28); dot(0, 0, r, o.c);
+      r = tel ? rayonTel(o.k, p) : o.mi ? 1.1 : o.k == 've' ? 3.4 : 2.1; if (!tel && !o.mi) blob(r * 5, r * 5, W, .28); dot(0, 0, r, o.c);
       if (tel) {
-        if (o.k == 'ma') { g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); g.filter = 'blur(7px)'; [[-5, 3, 5], [3, 5, 4], [6, -2, 3]].forEach(function (q) { dot(q[0], q[1], q[2], 'rgba(96,44,30,.6)'); }); g.restore(); }
+        if (o.k == 'ma') { g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); g.filter = 'blur(' + Math.max(1, r / 2.2) + 'px)'; g.scale(r / 15, r / 15); [[-5, 3, 5], [3, 5, 4], [6, -2, 3]].forEach(function (q) { dot(q[0], q[1], q[2], 'rgba(96,44,30,.6)'); }); g.restore(); }
         if (o.k == 'me' || o.k == 've') shade(r, p.il, rev(p.lon - pos('so', T).lon) > 180); else limb(r);
       }
     }
@@ -57,7 +63,7 @@ function peindre(g, o, p, z, ins, T) {
       star([2.6, 3.4, 4][ins] - Math.max(0, o.m) * .5, o.c);
       if (tel && o.n == 'Alpha du Centaure') { g.shadowBlur = 12; g.shadowColor = o.c; dot(11, -3, 2.6, '#ffe3a8'); g.shadowBlur = 0; }
     }
-    else if (o.ty == 'db') { g.shadowBlur = 12; g.shadowColor = h = o.mi && o.n != 'Castor' ? '#ffc982' : '#fff'; dot(0, 0, tel ? 3.4 : 2.6, h); if (ins >= o.mi) dot(ins ? tel ? o.s > 5 ? 56 : o.s > .3 ? 26 : o.s > .1 ? 16 : 10 : o.s > 5 ? 11 : 5 : 3, tel ? -7 : -1, tel ? 2.4 : 1.7, o.c); if (tel && o.s > 5) dot(4, 6, 2, '#fff'); g.shadowBlur = 0; }
+    else if (o.ty == 'db') { g.shadowBlur = 12; g.shadowColor = h = o.sp && o.n != 'Castor' ? '#ffc982' : '#fff'; dot(0, 0, tel ? 3.4 : 2.6, h); if (ins >= o.sp) dot(ins ? tel ? o.s > 5 ? 56 : o.s > .3 ? 26 : o.s > .1 ? 16 : 10 : o.s > 5 ? 11 : 5 : 3, tel ? -7 : -1, tel ? 2.4 : 1.7, o.c); if (tel && o.s > 5) dot(4, 6, 2, '#fff'); g.shadowBlur = 0; }
     else if (o.ty == 'ao') { r = Math.min(Math.max(o.s * u / 2, [6, 10, 46][ins]), 215); if (!ins && o.s < 100) blob(10, 10, '200,215,255', .6); else { g.shadowColor = o.c; g.shadowBlur = 5; if (o.n[0] == 'D' && ins) { h = tel ? 58 : 15; spread(tel ? 55 : 24, h * .8, -h, 1.9, o.c); spread(tel ? 48 : 20, h * .8, h, 1.7, o.c); } else spread([7, 38, 70][ins], r, 0, [1.3, 1.8, 2][ins], o.c); g.shadowBlur = 0; } }
     else if (o.ty == 'ag') { r = tel ? Math.max(o.s * u * .7, 36) : ins ? 9 : 5; blob(r, r, '220,226,245', .9); if (tel) for (i = 0; i < 190; i++) { a = rnd() * P2; b = r * Math.pow(rnd(), 1.5); dot(Math.cos(a) * b, Math.sin(a) * b, .35 + rnd() * .5, 'rgba(255,250,236,.75)'); } }
     else if (o.ty == 'ga') {

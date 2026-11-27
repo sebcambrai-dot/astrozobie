@@ -72,6 +72,8 @@ var OBJETS = CATALOGUE.map(function (s) {
   if (!p[2]) o.k = k == 'ne2' ? 'ne' : k;
   o.d = p.length > 10 ? p.slice(9) : TEXTES[k];
   o.g = o.k ? 1 : k == 'et' || k == 'db' ? 2 : 3;   /* 1 système solaire, 2 étoiles, 3 ciel profond */
+  /* une étoile double se voit à l'œil nu comme une seule étoile : « sp » est l'instrument qui la dédouble */
+  if (k == 'db') { o.sp = o.mi; o.mi = 0; o.d = o.d.map(function (t, i) { return t || (i ? 'Aux jumelles' : 'À l’œil nu') + ', une seule étoile. Pour la voir double, il faut ' + (o.sp == 1 ? 'des jumelles' : 'un télescope') + '.'; }); }
   return o;
 });
 

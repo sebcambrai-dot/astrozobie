@@ -9,6 +9,7 @@
 * { box-sizing: border-box; margin: 0; }
 [hidden] { display: none !important; }
 html { background: var(--fond); }
+* { scrollbar-width: thin; scrollbar-color: #2f6672 transparent; }
 body { font: 16px/1.45 var(--police); background: var(--fond); color: var(--texte); font-variant-numeric: lining-nums tabular-nums; -webkit-text-size-adjust: 100%;
   padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); min-height: 100vh; min-height: 100svh; }
 button, input { font: inherit; color: inherit; }
@@ -60,8 +61,10 @@ section { display: grid; gap: 14px; }
 #v-quand { color: var(--accent); font-weight: 600; } #v-quand::first-letter { text-transform: uppercase; }
 #v-detail { color: var(--doux); font-size: 15px; }
 #v-creneau:empty, #v-meteo:empty { display: none; }
-#heures { display: flex; gap: 3px; }
-.h { flex: 1; min-width: 0; background: none; padding: 0; min-height: 0; border-radius: 3px; display: flex; flex-direction: column; gap: 4px; }
+#heures { display: flex; gap: 3px; padding-top: 10px; }
+#heures, #bars { touch-action: pan-y; }      /* on peut y glisser le doigt de côté */
+.h { flex: 1; min-width: 0; background: none; padding: 0; min-height: 0; border-radius: 3px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+.h.n::before { content: ''; position: absolute; top: -9px; left: 50%; margin-left: -5px; border: 5px solid transparent; border-top: 6px solid var(--texte); border-bottom: 0; }      /* l'heure en cours */
 .h:hover { background: none; }
 .h u { display: block; position: relative; height: 84px; border-radius: 3px; overflow: hidden; text-decoration: none; }
 .h i { position: absolute; left: 0; right: 0; top: 0; background: rgba(176, 190, 197, .92); }
@@ -91,6 +94,7 @@ section { display: grid; gap: 14px; }
 .ax { display: flex; justify-content: space-between; color: var(--discret); font-size: 13px; border-top: 1px solid var(--trait); padding-top: 4px; }
 #info { font-size: 14.5px; color: var(--doux); margin: 8px 0 12px; min-height: 42px; } #info b { color: var(--texte); font-weight: 600; } #info b::first-letter { text-transform: uppercase; }
 #b-note { margin-top: 10px; }
+#cd-t { margin: 0 0 6px; } #cd-t:empty { display: none; } #top-n { margin: 8px 0 10px; } #c-aide { margin: 10px 2px 0; } #o-po { margin: -6px 0 0; }
 #cd { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 12px; }
 #cd div { background: var(--creux); border-radius: 4px; text-align: center; padding: 7px 0 6px; font-size: 26px; font-weight: 300; line-height: 1.1; }
 #cd small { display: block; font-size: 13px; font-weight: 400; color: var(--discret); }
@@ -196,7 +200,7 @@ input[type=range]::-moz-range-thumb { width: 10px; height: 34px; border: 0; bord
   body { padding: 0 0 0 96px; }
   #onglets { right: auto; top: 0; width: 96px; flex-direction: column; justify-content: flex-start; border-top: 0; border-right: 1px solid var(--trait); padding: 76px 0 0; }
   #onglets button { flex: none; padding: 14px 4px; }
-  #haut { padding-left: 28px; padding-right: 28px; }
+  #haut { padding-left: max(28px, calc((100vw - 96px - 1180px) / 2 + 28px)); padding-right: max(28px, calc((100vw - 96px - 1180px) / 2 + 28px)); }      /* aligné sur le contenu, même sur un écran très large */
   main { padding: 22px 28px 40px; }
   .grille { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .deux { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
@@ -215,8 +219,19 @@ input[type=range]::-moz-range-thumb { width: 10px; height: 34px; border: 0; bord
   #bulle { bottom: 32px; }
 }
 @media (max-width: 899px) {
-  #o-fiche { order: -1; }
   #o-z { flex-direction: column-reverse; align-items: stretch; gap: 10px; }
+}
+/* tablette : la liste et la fiche côte à côte, comme sur ordinateur */
+@media (min-width: 700px) and (max-width: 899px) {
+  #p-voir .deux { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  #o-fiche { position: sticky; top: 76px; }
+}
+@media (max-width: 699px) {
+  #o-fiche { order: -1; }
+  #o-v { max-width: 230px; }
+}
+@media (max-width: 360px) {
+  #o-d { grid-template-columns: 1fr; }
 }
 @media (max-width: 420px) {
   .heure { font-size: 38px; }

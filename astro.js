@@ -138,8 +138,9 @@ var GA = [0, 3.5, 5.5], BA = [4.3, 5.3, 6.2];
 /* marge : positive si l'objet est à la portée de l'instrument i (0 œil nu, 1 jumelles, 2 télescope) sous un ciel de qualité q (0 ville, 1 village, 2 campagne) */
 function mar(o, p, i, e, q, nomo, notw) {
   if (i < o.mi) return -9;
+  if (!notw && o.g == 3 && e.su > -11) return -9;       /* amas, nébuleuses et galaxies : rien tant que le crépuscule n'est pas bien avancé */
   var a = Math.max(p.alt, 3), f = o.ty == 'ga' || o.ty == 'ne' || o.ty == 'an' ? 1.4 : 1;
-  return BA[q] + GA[i] - (nomo ? 0 : e.mo * f) - (notw ? 0 : e.tw) - (o.g == 3 || !o.k ? .2 * (1 / S(a) - 1) : .25 * (1 / S(a) - 1)) - mag(o, p) - (o.p || 0);
+  return BA[q] + GA[i] - (nomo ? 0 : e.mo * f) - (notw ? 0 : e.tw * f) - (o.g == 3 || !o.k ? .2 * (1 / S(a) - 1) : .25 * (1 / S(a) - 1)) - mag(o, p) - (o.p || 0);
 }
 
 if (typeof module != 'undefined') module.exports = { lieu: lieu, pos: pos, hor: hor, hel: hel, cross: cross, lune: lune, midi: midi, nuit: nuit, nuitDe: nuitDe, moons: moons, mag: mag, at: at, env: env, mar: mar, ring: ring, rev: rev, S: S, C: C };

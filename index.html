@@ -40,14 +40,14 @@
       <h1 id="v-titre"></h1>
       <p id="v-detail"></p>
       <p id="v-creneau"></p>
-      <div class="rangee"><button type="button" id="v-carte" class="p">Voir le ciel à cette heure</button><button type="button" id="v-maj">Actualiser la météo</button></div>
+      <div class="rangee"><button type="button" id="v-carte" class="p">Voir le ciel à cette heure</button><button type="button" id="v-maj">Actualiser la météo</button><button type="button" id="v-retour" hidden>Revenir à ce soir</button></div>
       <p class="note" id="v-meteo"></p>
     </div>
   </div>
   <div class="grille">
-    <div class="bloc" id="b-heures"><h2>La nuit, heure par heure</h2><div id="heures"></div><p id="h-note"></p><p class="note">Le gris descend avec les nuages, le point signale la Lune levée. Touche une heure pour son détail.</p></div>
-    <div class="bloc"><h2 id="top-t">À voir ce soir</h2><div id="top"></div><button type="button" id="top-plus" class="large">Tout ce qu’on peut voir</button></div>
-    <div class="bloc"><h2>Prochains rendez-vous</h2><div id="cd"></div><div id="rdv"></div></div>
+    <div class="bloc" id="b-heures"><h2>La nuit, heure par heure</h2><div id="heures"></div><p id="h-note"></p><p class="note" id="h-aide">Le gris descend avec les nuages, le point signale la Lune levée<span id="h-fl">, la petite flèche montre l’heure en cours</span>. Touche une heure, ou glisse le doigt, pour son détail.</p></div>
+    <div class="bloc"><h2 id="top-t">À voir ce soir</h2><div id="top"></div><p class="note" id="top-n">Les « poings » : un poing fermé, bras tendu, couvre environ 10° de ciel.</p><button type="button" id="top-plus" class="large">Tout ce qu’on peut voir</button></div>
+    <div class="bloc"><h2>Prochains rendez-vous</h2><p class="note" id="cd-t"></p><div id="cd"></div><div id="rdv"></div></div>
     <div class="bloc" id="b-nuits"><h2>Les 30 prochaines nuits</h2>
       <div id="bars"></div><div class="ax" id="ax"><span></span><span></span><span></span></div>
       <div id="info"></div>
@@ -61,7 +61,7 @@
 <!-- ============ Carte ============ -->
 <section id="p-carte" hidden>
   <div class="deux">
-    <div class="bloc" id="c-g"><canvas id="ciel" width="1200" height="1200" aria-label="Carte du ciel"></canvas></div>
+    <div class="bloc" id="c-g"><canvas id="ciel" width="1200" height="1200" aria-label="Carte du ciel"></canvas><p class="note" id="c-aide">Tiens la carte au-dessus de ta tête, le N vers le nord : l’est se retrouve à gauche, comme dans le ciel. Les voiles gris sont les nuages prévus à cette heure.</p></div>
     <div class="bloc" id="c-d">
       <div id="c-t"><div><div class="heure" id="c-h"></div><div id="c-j"></div></div><button type="button" id="c-now">Maintenant</button></div>
       <p id="c-f"></p>
@@ -88,7 +88,7 @@
     <div class="bloc" id="o-fiche">
       <div id="o-v"><canvas id="oeil" width="1020" height="1020" aria-label="Vue simulée dans l’instrument"></canvas></div>
       <div id="o-r"><div id="o-q"></div><h1 id="o-n"></h1><p id="o-e"></p>
-        <div id="o-d"><div id="o-co"></div><div id="o-al"></div></div><div id="o-cu"></div>
+        <div id="o-d"><div id="o-co"></div><div id="o-al"></div></div><div id="o-cu"></div><p class="note" id="o-po">Un poing fermé, bras tendu, couvre environ 10° dans le ciel.</p>
         <div class="rangee"><button type="button" id="o-sn"></button><button type="button" id="o-su" class="clair">Surprends-moi</button><button type="button" id="o-vi">Viser avec le téléphone</button></div>
         <p class="note" id="o-no"></p></div>
     </div>
