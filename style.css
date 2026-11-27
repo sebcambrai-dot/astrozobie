@@ -238,6 +238,21 @@ button.lien { background: none; color: var(--clair); padding: 0; min-height: 44p
 #t-ocf label { display: block; color: var(--discret); font-size: 15px; margin-bottom: 6px; }
 #t-ocf button { flex: none; }
 #t-credit { padding: 0 2px; max-width: 70ch; }
+
+/* ---------- pied de page : numéro de version et ce qui a changé ---------- */
+#pied { margin-top: 22px; border-top: 1px solid var(--trait); padding: 4px 2px 0; }
+#versions summary { cursor: pointer; list-style: none; min-height: 44px; display: flex; align-items: center; gap: 8px; color: var(--discret); font-size: 14px; }
+#versions summary::-webkit-details-marker { display: none; }
+#versions summary::before { content: ''; width: 6px; height: 6px; border: solid var(--discret); border-width: 0 1.5px 1.5px 0; transform: rotate(-45deg); transition: transform .15s; flex: none; margin-right: 2px; }
+#versions[open] summary::before { transform: rotate(45deg); }
+#versions summary b { font-weight: 600; color: var(--doux); }
+#versions summary small { margin-left: auto; font-size: 14px; }
+#versions ol { list-style: none; padding: 0 0 8px; display: grid; gap: 12px; max-width: 70ch; }
+#versions li { display: grid; grid-template-columns: 3em minmax(0, 1fr); column-gap: 10px; font-size: 14px; color: var(--doux); }
+#versions li b { color: var(--texte); font-weight: 600; }
+#versions li time { color: var(--discret); }
+#versions li p { grid-column: 2; margin: 2px 0 0; }
+#versions .nb { white-space: nowrap; }
 #o-oc { justify-content: center; margin-top: 10px; }
 
 /* ---------- lieu, viseur, effets ---------- */

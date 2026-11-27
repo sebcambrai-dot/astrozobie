@@ -1,6 +1,7 @@
 /* Garde l'appli utilisable sans réseau : les calculs du ciel marchent hors ligne, seule la météo a besoin d'internet.
-   Changer VERSION à chaque mise en ligne pour que les téléphones prennent les nouveaux fichiers. */
-var VERSION = 'astrozobie-2026-11-27-f';
+   Changer VERSION à chaque mise en ligne pour que les téléphones prennent les nouveaux fichiers,
+   et ajouter une ligne au journal des versions montré dans l'appli (pied de page de index.html). */
+var VERSION = 'astrozobie-2026-11-27-g';
 var FICHIERS = ['./', 'index.html', 'style.css', 'astro.js', 'messier.js', 'catalogue.js', 'dessin.js', 'savant.js', 'distances.js', 'app.js', 'manifest.webmanifest', 'icone.svg', 'icone-192.png', 'icone-512.png'];
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FICHIERS); }).then(function () { return self.skipWaiting(); })); });
 self.addEventListener('activate', function (e) {
