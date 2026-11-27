@@ -1,4 +1,4 @@
-/* Observatoire : l'application. Quatre écrans (Ce soir, Carte, À voir, Jeux), le choix du lieu, la météo, le viseur.
+/* AstroZobie (d'abord appelée « Observatoire ») : l'application. Quatre écrans (Ce soir, Carte, À voir, Jeux), le choix du lieu, la météo, le viseur.
    Tout se calcule sur l'appareil ; seule la météo vient d'internet (Open-Meteo, sans clé). */
 (function () {
 'use strict';

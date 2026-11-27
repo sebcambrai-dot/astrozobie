@@ -1,4 +1,4 @@
-/* Observatoire : style « le poste » (validé le 25/11/2026), pensé d'abord pour le téléphone tenu dehors la nuit.
+/* AstroZobie : style « le poste » (validé le 25/11/2026), pensé d'abord pour le téléphone tenu dehors la nuit.
    Une colonne sur téléphone avec les onglets en bas ; à partir de 900 px, onglets à gauche et blocs sur deux colonnes. */
 :root {
   --fond: #06131a; --panneau: #0a232c; --creux: #0d2c36; --bouton: #17434f; --bouton-survol: #205765;

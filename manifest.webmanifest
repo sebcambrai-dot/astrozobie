@@ -1,6 +1,6 @@
 {
-  "name": "Observatoire",
-  "short_name": "Observatoire",
+  "name": "AstroZobie",
+  "short_name": "AstroZobie",
   "description": "Le ciel au-dessus de toi, ce soir : météo, carte, ce qu'on voit à l'œil nu, aux jumelles et au télescope.",
   "lang": "fr",
   "start_url": "./",
