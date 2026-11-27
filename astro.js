@@ -1,6 +1,7 @@
 /* Calculs du ciel, pour n'importe quel endroit de la Terre.
-   Mêmes formules que l'observatoire de Noël (contrôlées auprès de NASA Horizons le 25/11/2026) ;
-   seul le lieu n'est plus fixe : lieu(latitude, longitude). Temps en millisecondes Unix, angles en degrés. */
+   Mêmes formules que l'observatoire de Noël (contrôlées auprès de JPL Horizons les 25 et 27/11/2026) ;
+   seul le lieu n'est plus fixe : lieu(latitude, longitude). Temps en millisecondes Unix, angles en degrés.
+   Planètes : éléments moyens et perturbations principales de la méthode de Paul Schlyter (« How to compute planetary positions »). */
 var R = Math.PI / 180, LAT = 50.176, LON = 3.235;
 function lieu(lat, lon) { LAT = lat; LON = lon; }
 function S(x) { return Math.sin(x * R); }
@@ -46,7 +47,11 @@ function pos(k, t) {
       + .053 * S(b.M + 2 * D) + .046 * S(2 * D - s.M) + .041 * S(b.M - s.M) - .035 * S(D) - .031 * S(b.M + s.M);
     lat -= .173 * S(b.L - EL.lu[0] - EL.lu[1] * d - 2 * D);
   }
-  if (k == 'ju' || k == 'sa') { m = 2 * hel('ju', d).M - 5 * hel('sa', d).M - 67.6; lon += k == 'ju' ? -.332 * S(m) : .812 * S(m); }
+  if (k == 'ju' || k == 'sa') {      /* la grande inégalité Jupiter-Saturne ; pour Saturne, les autres termes de Schlyter (écart à Horizons ramené de 0,12° à 0,05°) */
+    var Mj = hel('ju', d).M, Ms = hel('sa', d).M; m = 2 * Mj - 5 * Ms - 67.6;
+    if (k == 'ju') lon += -.332 * S(m);
+    else { lon += .812 * S(m) - .229 * C(2 * Mj - 4 * Ms - 2) + .119 * S(Mj - 2 * Ms - 3) + .046 * S(2 * Mj - 6 * Ms - 69) + .014 * S(Mj - 3 * Ms + 32); lat += -.02 * C(2 * Mj - 4 * Ms - 2) + .018 * S(2 * Mj - 6 * Ms - 49); }
+  }
   x = r * C(lon) * C(lat); y = r * S(lon) * C(lat); z = r * S(lat);
   if (k != 'so' && k != 'lu') { x += s.r * C(s.lon); y += s.r * S(s.lon); }
   e = 23.4393 - 3.563e-7 * d;
@@ -55,6 +60,16 @@ function pos(k, t) {
   o = hor(Math.atan2(m, x) / R, Math.atan2(y * S(e) + z * C(e), Math.hypot(x, m)) / R, t, s, k == 'lu');
   o.lon = rev(Math.atan2(y, x) / R); o.be = be; o.D = dd; o.r = r; o.rs = s.r;
   return o;
+}
+
+/* hauteur du lever et du coucher : centre de l'astre à 0,57° sous l'horizon (réfraction), 0,83° pour le Soleil et la Lune (réfraction et demi-diamètre) */
+function horizon(k) { return k == 'so' || k == 'lu' ? -.833 : -.57; }
+
+/* précession : coordonnées J2000 (degrés) ramenées à l'équinoxe de l'instant t (méthode rigoureuse de Meeus, Astronomical Algorithms, chap. 21) */
+function precesse(ra, de, t) {
+  var T = (t / 864e5 - 10957.5) / 36525, z1 = (2306.2181 + (.30188 + .017998 * T) * T) * T / 3600, z = (2306.2181 + (1.09468 + .018203 * T) * T) * T / 3600, th = (2004.3109 - (.42665 + .041833 * T) * T) * T / 3600,
+    A = C(de) * S(ra + z1), B = C(th) * C(de) * C(ra + z1) - S(th) * S(de), D = S(th) * C(de) * C(ra + z1) + C(th) * S(de);
+  return [rev(Math.atan2(A, B) / R + z), Math.asin(Math.max(-1, Math.min(1, D))) / R];
 }
 
 /* premier instant après « from » où l'astre franchit la hauteur h (dir 1 en montant, -1 en descendant) */
@@ -120,7 +135,8 @@ function mag(o, p) {
   var i = Math.acos(Math.max(-1, Math.min(1, (p.r * p.r + p.D * p.D - p.rs * p.rs) / (2 * p.r * p.D)))) / R, l = 5 * Math.log(p.r * p.D) / Math.LN10;
   p.il = (1 + C(i)) / 2;
   return l + {
-    me: -.36 + .027 * i + 2.2e-13 * Math.pow(i, 6), ve: -4.34 + .013 * i + 4.2e-7 * i * i * i, ma: -1.51 + .016 * i, ju: -9.25 + .014 * i,
+    /* Schlyter ; Vénus et Jupiter : Mallama et Hilton (2018), plus proches des éphémérides */
+    me: -.36 + .027 * i + 2.2e-13 * Math.pow(i, 6), ve: -4.384 + i * (-1.044e-3 + i * (3.687e-4 + i * (-2.814e-6 + i * 8.938e-9))), ma: -1.51 + .016 * i, ju: -9.395 + i * (-3.7e-4 + i * 6.16e-4),
     sa: -9 + .044 * i - 2.6 * Math.abs(S(ring(p))) + 1.2 * Math.pow(S(ring(p)), 2), ur: -7.15, ne: -6.95
   }[o.k];
 }
@@ -134,13 +150,17 @@ function env(t) {
   return { su: s.alt, il: il, lu: l.alt, mo: l.alt > 0 ? 2.2 * Math.pow(il, 1.5) * Math.min(1, l.alt / 25 + .3) : 0, tw: Math.max(0, s.alt + 18) * .35 };
 }
 
-var GA = [0, 3.5, 5.5], BA = [4.3, 5.3, 6.2];
+var GA = [0, 3.5, 5.5], BA = [4.3, 5.3, 6.2], LUNE_CIEL = [.4, .7, 1];      /* la Lune gêne moins un ciel de ville, déjà clair (estimation de l'appli) */
+/* gain du télescope sur l'œil nu, en magnitudes : 5,5 pour 114 mm, puis 5 × log du rapport des diamètres (la lumière captée croît comme la surface).
+   Estimation de l'appli : l'œil, le ciel et l'expérience comptent autant que le diamètre. */
+function gainTel(D) { return 5.5 + 5 * Math.log(D / 114) / Math.LN10; }
 /* marge : positive si l'objet est à la portée de l'instrument i (0 œil nu, 1 jumelles, 2 télescope) sous un ciel de qualité q (0 ville, 1 village, 2 campagne) */
 function mar(o, p, i, e, q, nomo, notw) {
   if (i < o.mi) return -9;
   if (!notw && o.g == 3 && e.su > -11) return -9;       /* amas, nébuleuses et galaxies : rien tant que le crépuscule n'est pas bien avancé */
-  var a = Math.max(p.alt, 3), f = o.ty == 'ga' || o.ty == 'ne' || o.ty == 'an' ? 1.4 : 1;
-  return BA[q] + GA[i] - (nomo ? 0 : e.mo * f) - (notw ? 0 : e.tw * f) - (o.g == 3 || !o.k ? .2 * (1 / S(a) - 1) : .25 * (1 / S(a) - 1)) - mag(o, p) - (o.p || 0);
+  var a = Math.max(p.alt, 3), f = o.ty == 'ga' || o.ty == 'ne' || o.ty == 'an' ? 1.4 : 1,
+    pe = (o.p || 0) * (o.sb > 22 ? [1.6, 1.25, 1][q] : 1);      /* un objet de très faible éclat de surface (au-delà de 22 mag par seconde d'arc carrée) se noie davantage dans un ciel clair */
+  return BA[q] + GA[i] - (nomo ? 0 : e.mo * f * LUNE_CIEL[q]) - (notw ? 0 : e.tw * f) - .2 * (1 / S(a) - 1) - mag(o, p) - pe;
 }
 
-if (typeof module != 'undefined') module.exports = { lieu: lieu, pos: pos, hor: hor, hel: hel, cross: cross, lune: lune, midi: midi, nuit: nuit, nuitDe: nuitDe, moons: moons, mag: mag, at: at, env: env, mar: mar, ring: ring, rev: rev, S: S, C: C };
+if (typeof module != 'undefined') module.exports = { lieu: lieu, pos: pos, hor: hor, hel: hel, cross: cross, lune: lune, midi: midi, nuit: nuit, nuitDe: nuitDe, moons: moons, mag: mag, at: at, env: env, mar: mar, gainTel: gainTel, GA: GA, BA: BA, ring: ring, rev: rev, S: S, C: C, precesse: precesse, horizon: horizon };

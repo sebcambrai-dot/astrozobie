@@ -25,6 +25,7 @@
   <button type="button" data-p="soir" class="p"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/></svg><span>Ce soir</span></button>
   <button type="button" data-p="carte"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg><span>Carte</span></button>
   <button type="button" data-p="voir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c4-6.500 16-6.500 20 0-4 6.500-16 6.500-20 0z"/><circle cx="12" cy="12" r="3"/></svg><span>À voir</span></button>
+  <button type="button" data-p="tele"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.500 13.500 18 5.500l2.200 3.800-14.500 8zM11.500 13.300 7.500 21M11.500 13.300l4 7.700"/></svg><span>Télescope</span></button>
   <button type="button" data-p="jeux"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6-5.400-3-5.400 3 1.200-6L3.300 9.300l6.100-.700z"/></svg><span>Jeux</span></button>
 </nav>
 
@@ -86,13 +87,97 @@
   <div class="deux">
     <div class="bloc" id="o-m"><div class="seg" id="o-f"><button type="button">Tout</button><button type="button">Système solaire</button><button type="button">Étoiles</button><button type="button">Ciel profond</button></div><div id="o-ls"></div></div>
     <div class="bloc" id="o-fiche">
-      <div id="o-v"><canvas id="oeil" width="1020" height="1020" aria-label="Vue simulée dans l’instrument"></canvas></div>
+      <div id="o-v"><canvas id="oeil" width="1020" height="1020" aria-label="Vue simulée dans l’instrument"></canvas><div class="seg" id="o-oc" hidden></div></div>
       <div id="o-r"><div id="o-q"></div><h1 id="o-n"></h1><p id="o-e"></p>
         <div id="o-d"><div id="o-co"></div><div id="o-al"></div></div><div id="o-cu"></div><p class="note" id="o-po">Un poing fermé, bras tendu, couvre environ 10° dans le ciel.</p>
         <div class="rangee"><button type="button" id="o-sn"></button><button type="button" id="o-su" class="clair">Surprends-moi</button><button type="button" id="o-vi">Viser avec le téléphone</button></div>
-        <p class="note" id="o-no"></p></div>
+        <p class="note" id="o-no"></p>
+        <details id="o-sc"><summary>Fiche scientifique</summary><dl id="o-sd"></dl><div id="o-sx"></div><button type="button" class="lien" id="o-calc">Comment c’est calculé, et les sources</button></details></div>
     </div>
   </div>
+</section>
+
+<!-- ============ Télescope ============ -->
+<section id="p-tele" hidden>
+  <div class="bloc" id="t-tete">
+    <p id="t-quand"></p>
+    <h1>Ton programme au télescope</h1>
+    <p id="t-resume"></p>
+    <div class="rangee"><button type="button" id="t-regl">Changer de télescope</button></div>
+  </div>
+  <div class="tele">
+    <div class="bloc" id="t-cond"><h2>Ce soir au télescope</h2><div id="t-cs"></div></div>
+    <div class="bloc" id="t-prog"><h2>La soirée, étape par étape</h2><p id="t-pt"></p>
+      <div class="choix"><label>Durée</label><div class="seg" id="t-du"><button type="button">2 h</button><button type="button">3 h</button><button type="button">5 h</button><button type="button">Toute la nuit</button></div></div>
+      <ol id="t-ls"></ol><p class="note" id="t-no"></p></div>
+    <div class="bloc" id="t-mat"><h2>Ton télescope</h2>
+      <div class="seg" id="t-pr"><button type="button">114 mm<small>Newton</small></button><button type="button">150 mm<small>Newton</small></button><button type="button">203 mm<small>Dobson 8 pouces</small></button><button type="button">254 mm<small>Dobson 10 pouces</small></button><button type="button">305 mm<small>Dobson 12 pouces</small></button></div>
+      <label class="coche"><input type="checkbox" id="t-goto"><span>Pointage automatique (GoTo) : l’appli propose les deux étoiles pour l’aligner</span></label>
+      <h2>Tes oculaires</h2><div id="t-oc"></div>
+      <form id="t-ocf"><label for="t-ocq">Ajouter un oculaire</label><div class="rangee"><input id="t-ocq" type="text" inputmode="decimal" autocomplete="off" placeholder="Focale en mm, par exemple 6"><button type="submit">Ajouter</button></div></form>
+      <div class="choix"><label>Ton ciel</label><div class="seg" id="t-sk"><button type="button">Ville</button><button type="button">Village</button><button type="button">Campagne</button></div></div>
+      <p class="note" id="t-info"></p></div>
+  </div>
+  <div class="deux" id="t-savoir">
+  <div class="bloc" id="t-phy"><h2>La physique de ton télescope</h2><div id="t-pc"></div></div>
+  <div class="bloc" id="t-calc"><h2>Comment c’est calculé</h2><div id="t-cc">
+    <details><summary>Positions du Soleil, de la Lune et des planètes</summary>
+      <p>Éléments orbitaux moyens et principales perturbations de la méthode de Paul Schlyter (<a href="https://stjarnhimlen.se/comp/ppcomp.html" target="_blank" rel="noopener">How to compute planetary positions</a>), rapportés à l’équinoxe de la date. Lune : dix termes en longitude (évection, variation, équation annuelle…) et le principal en latitude, puis la parallaxe, appliquée à la hauteur seule : 0,95° × cos h. Jupiter et Saturne : la grande inégalité, et pour Saturne les autres termes de Schlyter.</p>
+      <p>Contrôle contre JPL Horizons (éphéméride DE441), vu de Paris, de 2026 à 2029 tous les 10 jours (la Lune toutes les 2 heures sur 60 jours). Écart maximal en position :</p>
+      <table><tbody>
+        <tr><th>Soleil</th><td>0,011°</td></tr><tr><th>Lune</th><td>0,21° (0,07° en moyenne)</td></tr>
+        <tr><th>Mercure</th><td>0,017°</td></tr><tr><th>Vénus</th><td>0,019°</td></tr><tr><th>Mars</th><td>0,030°</td></tr>
+        <tr><th>Jupiter</th><td>0,035°</td></tr><tr><th>Saturne</th><td>0,045°</td></tr><tr><th>Uranus</th><td>0,031°</td></tr><tr><th>Neptune</th><td>0,011°</td></tr>
+      </tbody></table>
+      <p>La Lune peut donc glisser de 0,2°, 40 % de son diamètre : assez juste pour la carte et le pointage, pas pour prédire une occultation.</p>
+    </details>
+    <details><summary>Précession, et ce qui est négligé</summary>
+      <p>Le catalogue est en J2000. Au chargement, chaque objet est ramené à l’équinoxe du jour par la précession rigoureuse de Meeus (<i>Astronomical Algorithms</i>, chap. 21, contrôlée sur son exemple 21.b).</p>
+      <p>Négligés : la nutation (jusqu’à 17″ en longitude), l’aberration annuelle (20,5″), les mouvements propres, le temps de lumière des planètes, et ΔT : le temps universel tient lieu de temps terrestre, ce qui décale la Lune d’environ 40″. Les hauteurs affichées sont géométriques, sans réfraction (un demi-degré à l’horizon, 1′ à 45°).</p>
+    </details>
+    <details><summary>Levers, couchers, crépuscules</summary>
+      <p>Recherche par pas de 5 minutes, puis interpolation linéaire. Lever et coucher : centre de l’astre à −0,833° pour le Soleil et la Lune (34′ de réfraction et 16′ de demi-diamètre, la Lune vue du lieu), −0,57° pour les planètes. Nuit noire : Soleil à −18°. Le programme commence à −12°, fin du crépuscule nautique (−8° près des pôles en été).</p>
+      <p>Contrôle Horizons : crépuscules à la minute près, lever et coucher de la Lune à 2 minutes près au même seuil.</p>
+    </details>
+    <details><summary>Éclat des planètes, lunes de Jupiter, anneaux</summary>
+      <p>Magnitudes : formules de Schlyter selon l’angle de phase ; pour Vénus et Jupiter, celles de Mallama et Hilton (<i>Astronomy and Computing</i>, 2018), plus proches des éphémérides. Saturne : terme des anneaux selon leur inclinaison vue de la Terre, plan des anneaux incliné de 28,06° sur l’écliptique, nœud à 169,51° (Schlyter). Lunes galiléennes : méthode abrégée de Meeus (chap. 44).</p>
+      <p>Contrôle Horizons : magnitudes à 0,01 près pour Vénus et Jupiter, 0,1 pour Mars, 0,12 pour Mercure ; lunes de Jupiter à 0,04 rayon de Jupiter ; inclinaison des anneaux à 0,05° ; diamètres apparents à 1,4 %.</p>
+    </details>
+    <details><summary>Ce qui est « à la portée » : la marge</summary>
+      <p>Marge = L + G − m − Lune − crépuscule − extinction − difficulté, en magnitudes. Un objet est donné visible si sa marge est positive, au-dessus de 5° ; le programme demande 0,3, entre 18° (20° pour les planètes) et 80°.</p>
+      <ul>
+        <li>L, limite à l’œil nu du ciel choisi : 4,3 en ville, 5,3 au village, 6,2 à la campagne.</li>
+        <li>G, gain de l’instrument : 3,5 aux jumelles ; au télescope 5,5 + 5 log(D/114), soit 5 log(D/7) − 0,56.</li>
+        <li>m : magnitude de l’objet ; la Lune est comptée à −12.</li>
+        <li>Lune levée : 2,2 k<sup>1,5</sup> × min(1, h/25° + 0,3), k étant sa fraction éclairée et h sa hauteur ; × 1,4 pour les galaxies et les nébuleuses ; × 0,4 en ville et 0,7 au village, où le ciel est déjà clair.</li>
+        <li>Crépuscule : 0,35 par degré du Soleil au-dessus de −18° (× 1,4 pour les objets diffus) ; aucun objet du ciel profond tant que le Soleil est au-dessus de −11°.</li>
+        <li>Extinction : 0,2 (1/sin h − 1), loi plan-parallèle bornée à h = 3°. La masse d’air des fiches suit Kasten et Young (1989), juste jusqu’à l’horizon (38 à 0°).</li>
+        <li>Difficulté : une pénalité propre à chaque objet, × 1,6 en ville et × 1,25 au village quand son éclat de surface dépasse 22 mag/″², avec SB = m + 2,5 log(π/4 · a · b · 3600), a et b en minutes d’arc.</li>
+      </ul>
+      <p>Ces constantes sont des estimations de l’appli, choisies à la main, pas tirées d’un modèle du seuil de contraste de l’œil : c’est la partie la plus approximative du calcul.</p>
+    </details>
+    <details><summary>Le programme de la soirée</summary>
+      <p>Grille de 10 minutes. Qualité d’une cible à chaque pas : 0,5 × min(marge, 3) + min(h, 65°)/30 (pour les planètes /15, leur image souffrant davantage de l’air traversé), moins ce que la Lune et l’aube coûtent aux objets diffus, et moins une pénalité au-dessus de 72°.</p>
+      <p>À chaque créneau, l’appli prend la cible au meilleur score : intérêt de l’objet + 0,6 × qualité − poids × (meilleure qualité qui lui reste − qualité actuelle), avec un bonus quand elle va se coucher et quand elle est voisine de la précédente. Le poids croît avec l’intérêt et vaut 8 pour les planètes : une belle cible attend son meilleur moment. La Lune passe à la fin, ou, si elle se couche pendant le programme, avant de descendre sous 28°, et jamais sous les nuages. Méthode gloutonne : bonne, pas optimale.</p>
+      <p>Oculaire proposé : le plus fort qui montre l’objet en entier avec de la marge (champ d’au moins 1,4 fois sa taille, 2,5 fois pour un amas ouvert), sans dépasser 2 D ni ce que l’air permet (250× calme, 160× moyen, 100× agité ou sous 25° de hauteur) ; pour les galaxies et les nébuleuses, une pupille de sortie d’au moins 2 mm.</p>
+    </details>
+    <details><summary>Météo</summary>
+      <p>Prévision horaire d’<a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>, jusqu’à 16 jours : couverture nuageuse totale et par étage, probabilité de pluie, température et point de rosée à 2 m (buée annoncée sous 3 °C d’écart), vent à 10 m et à 250 hPa, vers 10 km d’altitude. Seule ta position, arrondie au kilomètre, est envoyée.</p>
+    </details>
+    <details><summary>Catalogues et sources</summary>
+      <ul>
+        <li>Objets Messier : positions, magnitudes, tailles et éclats de surface d’<a href="https://github.com/mattiaverga/OpenNGC" target="_blank" rel="noopener">OpenNGC</a> (Mattia Verga, licence CC BY-SA 4.0) ; tailles complétées par Wikipédia ; pour les galaxies sans magnitude V, B − 0,75.</li>
+        <li>Amas globulaires : <a href="https://physics.mcmaster.ca/~harris/mwgc.dat" target="_blank" rel="noopener">catalogue de Harris</a> (1996, édition 2010) : distance, magnitude, métallicité [Fe/H], magnitude de la branche horizontale, concentration.</li>
+        <li>Distances des autres objets : <a href="https://en.wikipedia.org/wiki/Messier_object#Messier_objects" target="_blank" rel="noopener">liste des objets de Messier</a> et pages de chaque objet, citées dans sa fiche.</li>
+        <li>Planètes : <a href="https://nssdc.gsfc.nasa.gov/planetary/factsheet/" target="_blank" rel="noopener">fiches planétaires de la NASA</a>. Contrôles : <a href="https://ssd.jpl.nasa.gov/horizons/" target="_blank" rel="noopener">JPL Horizons</a>.</li>
+      </ul>
+    </details>
+    <details><summary>Ce qui n’est pas modélisé</summary>
+      <p>La transparence de l’air (aérosols, humidité, brume), le dôme de lumière d’une ville voisine dans une direction donnée, l’adaptation à l’obscurité et l’expérience de l’observateur, la vision décalée, les filtres, l’état des miroirs, la turbulence locale (sol, tube, toits) ; pour les positions, ce qui est listé plus haut. Durées, oculaires et seuils proposés restent des estimations, à ajuster sur le terrain.</p>
+    </details>
+  </div></div>
+  </div>
+  <p class="note" id="t-credit">Objets Messier : positions, éclats et tailles tirés d’<a href="https://github.com/mattiaverga/OpenNGC" target="_blank" rel="noopener">OpenNGC</a> (Mattia Verga, licence CC BY-SA 4.0). Amas globulaires : catalogue de Harris (édition 2010). Distances : Wikipédia, objet par objet. Planètes : fiches de la NASA. Calculs contrôlés sur JPL Horizons. Agitation de l’air : vent en altitude prévu par Open-Meteo. Durées, oculaires et seuils : estimations de l’appli, à ajuster sur le terrain.</p>
 </section>
 
 <!-- ============ Jeux ============ -->
@@ -106,7 +191,7 @@
     <div class="bloc" id="g-voy"><h2>Voyage express</h2><p class="note">Le ciel d’ailleurs, en ce moment, avec sa météo.</p><div id="g-vl"></div></div>
     <div class="bloc" id="g-voeu"><h2>Étoile filante</h2><p class="note" id="g-vt">Besoin d’un vœu ? Il en passe une sur demande.</p><div class="rangee"><button type="button" id="g-vb" class="clair">Fais un vœu</button></div></div>
     <div class="bloc" id="g-bad"><h2>Insignes</h2><div id="g-bl"></div></div>
-    <div class="bloc" id="g-alb"><h2>Album du ciel</h2><div id="g-ac"></div><div id="g-al"></div></div>
+    <div class="bloc" id="g-alb"><h2>Album du ciel</h2><div id="g-ac"></div><div id="g-al"></div><button type="button" id="g-at" class="large"></button></div>
   </div>
 </section>
 </main>
@@ -131,8 +216,11 @@
 <canvas id="fx" aria-hidden="true"></canvas>
 <div id="bulle" role="status" hidden></div>
 <script src="astro.js"></script>
+<script src="messier.js"></script>
 <script src="catalogue.js"></script>
 <script src="dessin.js"></script>
+<script src="savant.js"></script>
+<script src="distances.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

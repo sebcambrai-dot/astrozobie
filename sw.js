@@ -1,7 +1,7 @@
 /* Garde l'appli utilisable sans réseau : les calculs du ciel marchent hors ligne, seule la météo a besoin d'internet.
    Changer VERSION à chaque mise en ligne pour que les téléphones prennent les nouveaux fichiers. */
-var VERSION = 'observatoire-2026-11-27-c';
-var FICHIERS = ['./', 'index.html', 'style.css', 'astro.js', 'catalogue.js', 'dessin.js', 'app.js', 'manifest.webmanifest', 'icone.svg', 'icone-192.png', 'icone-512.png'];
+var VERSION = 'observatoire-2026-11-27-d';
+var FICHIERS = ['./', 'index.html', 'style.css', 'astro.js', 'messier.js', 'catalogue.js', 'dessin.js', 'savant.js', 'distances.js', 'app.js', 'manifest.webmanifest', 'icone.svg', 'icone-192.png', 'icone-512.png'];
 self.addEventListener('install', function (e) { e.waitUntil(caches.open(VERSION).then(function (c) { return c.addAll(FICHIERS); }).then(function () { return self.skipWaiting(); })); });
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (k) { return Promise.all(k.filter(function (n) { return n != VERSION; }).map(function (n) { return caches.delete(n); })); }).then(function () { return self.clients.claim(); }));

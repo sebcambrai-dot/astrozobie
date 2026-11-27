@@ -1,12 +1,13 @@
 /* Dessins : la vue simulée dans l'instrument, la carte du ciel, le viseur. Repris de l'observatoire de Noël, rendus indépendants du lieu. */
 var POLICE = '"Segoe UI Variable Display","Segoe UI",Roboto,system-ui,sans-serif';
-var CHAMP = [12, 6.5, 1.2];   /* largeur de la vue en degrés : œil nu, jumelles, télescope */
+var CHAMP = [12, 6.5, 1.2];   /* largeur de la vue en degrés : œil nu, jumelles, télescope (l'appli y met le champ de l'oculaire choisi) */
 var ASTRES = [['lu', 'Lune', '#f4f1e4'], ['ve', 'Vénus', '#fff6c9'], ['ju', 'Jupiter', '#f3c98b'], ['sa', 'Saturne', '#e6d59a'], ['ma', 'Mars', '#ff8a5c'], ['me', 'Mercure', '#c9c9d6']];
 
 /* ---------- vue dans l'instrument : toile de 340 unités de côté ---------- */
-/* diamètre apparent des planètes, en secondes d'arc à une unité astronomique : au télescope, elles gardent leurs tailles relatives */
+/* diamètre apparent des planètes, en secondes d'arc à une unité astronomique.
+   Au télescope, leurs disques sont agrandis huit fois (sinon on ne verrait pas les détails sur un écran), tous du même facteur :
+   elles gardent leurs tailles relatives, et l'écart des lunes au bord du disque reste à l'échelle. */
 var DIA = { me: 6.74, ve: 16.92, ma: 9.36, ju: 196.9, sa: 165.6, ur: 70.5, ne: 68.3 };
-function rayonTel(k, p) { return Math.max(2.6, Math.min(60, DIA[k] / (p.D || 1) * .8)); }
 function peindre(g, o, p, z, ins, T) {
   var sd = o.n.length * 977 + o.n.charCodeAt(1) * 31, i, a, b, r, h, f, u = 340 / (CHAMP[ins] * 60), P2 = Math.PI * 2, W = '255,255,255', tel = ins == 2;
   function rnd() { sd = (sd * 16807) % 2147483647; return sd / 2147483647; }
@@ -18,13 +19,16 @@ function peindre(g, o, p, z, ins, T) {
   function shade(q, il, left) { g.save(); g.beginPath(); g.arc(0, 0, q + .5, 0, 7); g.clip(); g.filter = 'blur(' + q / 7 + 'px)'; half(q + q / 30, 'rgba(3,8,14,.97)', 1 - il, !left); g.restore(); }
   function star(q, c) { g.shadowColor = c; g.shadowBlur = tel ? 26 : 14; dot(0, 0, q, c); dot(0, 0, q * .6); g.shadowBlur = 0; if (tel) for (i = 0; i < 4; i++) { g.save(); g.rotate(i * P2 / 4); g.fillStyle = grad(34, [[0, W + ',.5'], [1, W + ',0']]); g.fillRect(0, -.5, 34, 1); g.restore(); } }
   function spread(n, q, x, s, c) { for (; n--;) { a = rnd() * P2; b = q * Math.sqrt(rnd()) * (.35 + .65 * rnd()); dot(x + Math.cos(a) * b, Math.sin(a) * b, .5 + Math.pow(rnd(), 3) * s, c); } }
+  function vrai(k) { return DIA[k] / (p.D || 1) / 2 * u / 60; }                     /* rayon réel du disque, en unités de la toile */
+  function disque(k) { return Math.max(2.6, Math.min(100, vrai(k) * 8)); }
   g.clearRect(0, 0, 340, 340); g.save(); g.beginPath(); g.arc(170, 170, 168, 0, 7); g.clip(); g.fillStyle = ins ? '#02070b' : '#081c26'; g.fillRect(0, 0, 340, 340);
   g.translate(170, 170); g.scale(z, z);
   for (i = 0; i < [60, 150, 90][ins]; i++) dot(rnd() * 380 - 190, rnd() * 380 - 190, .25 + Math.pow(rnd(), 4) * 1.1, 'rgba(' + ['255,255,255', '205,222,255', '255,232,205'][i % 3] + ',' + (.2 + rnd() * .5) + ')');
-  if (o.k && LAT < 0) g.rotate(Math.PI);   /* au sud de l'équateur, la Lune et les planètes se voient retournées */
+  /* au sud de l'équateur, la Lune et les planètes se voient retournées ; un télescope de Newton (ou Dobson) tourne l'image d'un demi-tour, sans effet miroir */
+  if ((o.k && LAT < 0) != tel) g.rotate(Math.PI);
   if (ins >= o.mi || o.ty == 'db') {
     if (o.k == 'lu') {
-      r = [9, 16, 146][ins]; a = rev(p.lon - pos('so', T).lon); if (!tel) blob(r * 2.6, r * 2.6, W, .3); dot(0, 0, r, '#e9e5d8');
+      r = tel ? Math.min(420, 936.4 / p.D * u) : [9, 16][ins]; a = rev(p.lon - pos('so', T).lon);      /* au télescope : son vrai rayon dans le champ de l'oculaire */ if (!tel) blob(r * 2.6, r * 2.6, W, .3); dot(0, 0, r, '#e9e5d8');
       g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); g.scale(r / 146, r / 146); g.filter = 'blur(' + r / 6 + 'px)'; g.beginPath();
       MER.forEach(function (q) { g.moveTo(q[0] + q[2], q[1]); g.ellipse(q[0], q[1], q[2], q[2] * .86, q[2], 0, 7); }); g.fillStyle = 'rgba(88,94,106,.6)'; g.fill(); g.filter = 'none';
       if (tel) {
@@ -34,22 +38,23 @@ function peindre(g, o, p, z, ins, T) {
       g.restore(); shade(r, (1 - C(a)) / 2, a > 180);
     }
     else if (o.k == 'ju') {
-      r = tel ? rayonTel('ju', p) : [2.8, 3.4][ins]; if (!tel) blob(14, 14, '243,203,139', .35); dot(0, 0, r, '#ecd3a6');
+      r = tel ? disque('ju') : [2.8, 3.4][ins]; if (!tel) blob(14, 14, '243,203,139', .35); dot(0, 0, r, '#ecd3a6');
       if (tel) { g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); g.scale(r / 16, r / 16); JU.forEach(function (q) { g.fillStyle = q[2]; g.globalAlpha = .75; g.fillRect(-16, q[0], 32, q[1]); }); g.restore(); limb(r); }
       /* vue à l'endroit, nord en haut : l'ouest est à droite */
-      if (ins) moons(T).forEach(function (q) { f = Math.abs(q); if (f > 1) dot((q > 0 ? 1 : -1) * (tel ? r + (f - 1) * 5 : f * 2.1), 0, tel ? 1.7 : 1, '#f4efe4'); });
+      if (ins) { h = vrai('ju'); moons(T).forEach(function (q) { f = Math.abs(q); if (f > 1) dot((q > 0 ? 1 : -1) * (tel ? r + (f - 1) * h : f * 2.1), 0, tel ? 1.7 : 1, '#f4efe4'); }); }
     }
     else if (o.k == 'sa') {
       if (tel) {
-        g.save(); r = rayonTel('sa', p) / 26; g.scale(r, r);
-        f = Math.abs(S(ring(p))); h = function (a, b) { AN.forEach(function (q) { g.strokeStyle = q[1]; g.lineWidth = Math.max(.7, q[2] * Math.min(1, f * 3.2)); g.beginPath(); g.ellipse(0, 0, q[0], Math.max(.5, q[0] * f), 0, a, b); g.stroke(); }); }; h(Math.PI, P2);
-        g.save(); g.scale(1, .92); g.beginPath(); g.arc(0, 0, 26, 0, 7); g.clip(); dot(0, 0, 26, '#e6d3a0'); SA.forEach(function (q) { g.fillStyle = q[2]; g.globalAlpha = .6; g.fillRect(-26, q[0], 52, q[1]); }); g.globalAlpha = 1; limb(26); g.restore(); h(0, Math.PI);
+        g.save(); r = disque('sa') / 26; g.scale(r, r);
+        /* ring() est négatif quand on voit la face nord des anneaux (2017) : leur moitié proche passe alors devant le globe, au sud ; depuis 2025, face sud, elle passe au nord */
+        b = ring(p); f = Math.abs(S(b)); a = b < 0 ? 0 : Math.PI; h = function (x, y) { AN.forEach(function (q) { g.strokeStyle = q[1]; g.lineWidth = Math.max(.7, q[2] * Math.min(1, f * 3.2)); g.beginPath(); g.ellipse(0, 0, q[0], Math.max(.5, q[0] * f), 0, x, y); g.stroke(); }); }; h(a + Math.PI, a + P2);
+        g.save(); g.scale(1, .92); g.beginPath(); g.arc(0, 0, 26, 0, 7); g.clip(); dot(0, 0, 26, '#e6d3a0'); SA.forEach(function (q) { g.fillStyle = q[2]; g.globalAlpha = .6; g.fillRect(-26, q[0], 52, q[1]); }); g.globalAlpha = 1; limb(26); g.restore(); h(a, a + Math.PI);
         g.restore();
       }
       else { blob(12, 12, '230,213,154', .35); g.fillStyle = o.c; g.beginPath(); g.ellipse(0, 0, ins ? 4 : 2.4, 2.4, 0, 0, 7); g.fill(); }
     }
     else if (o.k) {
-      r = tel ? rayonTel(o.k, p) : o.mi ? 1.1 : o.k == 've' ? 3.4 : 2.1; if (!tel && !o.mi) blob(r * 5, r * 5, W, .28); dot(0, 0, r, o.c);
+      r = tel ? disque(o.k) : o.mi ? 1.1 : o.k == 've' ? 3.4 : 2.1; if (!tel && !o.mi) blob(r * 5, r * 5, W, .28); dot(0, 0, r, o.c);
       if (tel) {
         if (o.k == 'ma') { g.save(); g.beginPath(); g.arc(0, 0, r, 0, 7); g.clip(); g.filter = 'blur(' + Math.max(1, r / 2.2) + 'px)'; g.scale(r / 15, r / 15); [[-5, 3, 5], [3, 5, 4], [6, -2, 3]].forEach(function (q) { dot(q[0], q[1], q[2], 'rgba(96,44,30,.6)'); }); g.restore(); }
         if (o.k == 'me' || o.k == 've') shade(r, p.il, rev(p.lon - pos('so', T).lon) > 180); else limb(r);
@@ -63,15 +68,29 @@ function peindre(g, o, p, z, ins, T) {
       star([2.6, 3.4, 4][ins] - Math.max(0, o.m) * .5, o.c);
       if (tel && o.n == 'Alpha du Centaure') { g.shadowBlur = 12; g.shadowColor = o.c; dot(11, -3, 2.6, '#ffe3a8'); g.shadowBlur = 0; }
     }
-    else if (o.ty == 'db') { g.shadowBlur = 12; g.shadowColor = h = o.sp && o.n != 'Castor' ? '#ffc982' : '#fff'; dot(0, 0, tel ? 3.4 : 2.6, h); if (ins >= o.sp) dot(ins ? tel ? o.s > 5 ? 56 : o.s > .3 ? 26 : o.s > .1 ? 16 : 10 : o.s > 5 ? 11 : 5 : 3, tel ? -7 : -1, tel ? 2.4 : 1.7, o.c); if (tel && o.s > 5) dot(4, 6, 2, '#fff'); g.shadowBlur = 0; }
-    else if (o.ty == 'ao') { r = Math.min(Math.max(o.s * u / 2, [6, 10, 46][ins]), 215); if (!ins && o.s < 100) blob(10, 10, '200,215,255', .6); else { g.shadowColor = o.c; g.shadowBlur = 5; if (o.n[0] == 'D' && ins) { h = tel ? 58 : 15; spread(tel ? 55 : 24, h * .8, -h, 1.9, o.c); spread(tel ? 48 : 20, h * .8, h, 1.7, o.c); } else spread([7, 38, 70][ins], r, 0, [1.3, 1.8, 2][ins], o.c); g.shadowBlur = 0; } }
-    else if (o.ty == 'ag') { r = tel ? Math.max(o.s * u * .7, 36) : ins ? 9 : 5; blob(r, r, '220,226,245', .9); if (tel) for (i = 0; i < 190; i++) { a = rnd() * P2; b = r * Math.pow(rnd(), 1.5); dot(Math.cos(a) * b, Math.sin(a) * b, .35 + rnd() * .5, 'rgba(255,250,236,.75)'); } }
+    else if (o.ty == 'db') { g.shadowBlur = 12; g.shadowColor = h = o.sp && o.n != 'Castor' ? '#ffc982' : '#fff'; dot(0, 0, tel ? 3.4 : 2.6, h); if (ins >= o.sp) { a = tel ? Math.max(14, o.s * u) : ins ? o.s > 5 ? 11 : 5 : 3; dot(tel ? a * .97 : a, tel ? -a * .24 : -1, tel ? 2.4 : 1.7, o.c); }      /* au télescope : l'écart vrai, au moins assez pour séparer les points */
+      if (tel && o.s > 5) { a = Math.max(7, .24 * u); dot(a * .55, a * .83, 2, '#fff'); }      /* Mizar B, à 14 secondes d'arc */ g.shadowBlur = 0; }
+    else if (o.ty == 'ao') { r = Math.min(Math.max(o.s * u / 2, [6, 10, 46][ins]), 215); if (!ins && o.s < 100) blob(10, 10, '200,215,255', .6);
+      else if (o.M == 73) { h = tel ? Math.max(u, 9) : 4; g.shadowColor = o.c; g.shadowBlur = 5; [[0, 0, 1.9], [.9, -.5, 1.6], [-.6, -.9, 1.5], [.3, 1.1, 1.4]].forEach(function (q) { dot(q[0] * h, q[1] * h, q[2], o.c); }); g.shadowBlur = 0; }      /* M73 : quatre étoiles en Y, un astérisme */
+      else { g.shadowColor = o.c; g.shadowBlur = 5; if (o.n[0] == 'D' && ins) { h = tel ? 58 : 15; spread(tel ? 55 : 24, h * .8, -h, 1.9, o.c); spread(tel ? 48 : 20, h * .8, h, 1.7, o.c); } else spread(tel ? Math.round(Math.min(90, 30 + o.s * 2)) : [7, 38][ins], r, 0, [1.3, 1.8, 2][ins], o.c); g.shadowBlur = 0; } }
+    else if (o.ty == 'ag') {      /* amas globulaire : au télescope, un cœur lumineux et une nuée d'étoiles fines qui s'éclaircit vers le bord */
+      r = tel ? Math.min(150, Math.max(o.s * u * .7, 36)) : ins ? 9 : 5;
+      if (!tel) blob(r, r, '220,226,245', .9);
+      else { blob(r * .7, r * .7, '220,226,245', .55); blob(r * .3, r * .3, '236,238,248', .8); for (i = 0, h = 160 + r * 3; i < h; i++) { a = rnd() * P2; b = r * Math.pow(rnd(), 1.6); dot(Math.cos(a) * b, Math.sin(a) * b, .3 + rnd() * .55, 'rgba(255,250,236,' + (.45 + rnd() * .5) + ')'); } }
+    }
     else if (o.ty == 'ga') {
-      r = Math.min(Math.max(o.s * u / 2, [10, 14, 30][ins]), 190); h = o.s == 150 ? .32 : .62;
+      r = Math.min(Math.max(o.s * u / 2, [10, 14, 30][ins]), 190); h = o.ax ? Math.max(.18, o.ax) : o.s == 150 ? .32 : .62;
       if (o.s >= 300) { blob(r, r * .7, '196,208,230', .45, .4); blob(r * .55, r * .2, '226,226,220', .5, .4); if (ins) spread(ins * 26, r * .9, 0, 1.2, '#fff'); }
       else { blob(r, r * h, '186,202,226', tel ? .42 : .5, -.6); blob(r * .3, r * .3 * Math.max(h, .6), '236,232,220', .75, -.6); if (o.s == 12 && tel) blob(7, 7, '200,210,226', .7); }
+      /* M81 et M82, à 37′ l'une de l'autre (M82 au nord) : la voisine n'apparaît que si le champ est assez large */
+      if (tel && (o.M == 81 || o.M == 82) && 37 * u < 160) { g.save(); g.translate(0, (o.M == 81 ? -37 : 37) * u); if (o.M == 81) blob(Math.max(4, 5.5 * u), Math.max(1.6, 2.2 * u), '186,202,226', .5, .4); else { blob(Math.max(6, 13 * u), Math.max(3.5, 7 * u), '186,202,226', .42, -.6); blob(Math.max(2, 3 * u), Math.max(1.5, 2 * u), '236,232,220', .7, -.6); } g.restore(); }
     }
-    else if (o.ty == 'an') { g.filter = 'blur(5px)'; g.strokeStyle = 'rgba(176,214,208,.75)'; g.lineWidth = 6; g.beginPath(); g.ellipse(0, 0, 16, 12.5, .5, 0, 7); g.stroke(); g.filter = 'none'; blob(13, 11, '150,190,190', .3); }
+    else if (o.ty == 'an') {      /* nébuleuses planétaires : à leur taille dans le champ */
+      r = Math.min(150, Math.max(tel ? 7 : 5, o.s * u / 2));
+      if (/Anneau|Hélice/.test(o.n)) { g.filter = 'blur(' + Math.max(1.2, r / 4) + 'px)'; g.strokeStyle = 'rgba(176,214,208,.75)'; g.lineWidth = Math.max(2, r * .38); g.beginPath(); g.ellipse(0, 0, r, r * .78, .5, 0, 7); g.stroke(); g.filter = 'none'; blob(r * .8, r * .7, '150,190,190', .3); }
+      else if (/Haltère/.test(o.n)) { g.save(); g.rotate(.6); blob(r, r * .7, '150,200,190', .3); [-1, 1].forEach(function (s) { g.save(); g.translate(s * r * .4, 0); blob(r * .45, r * .55, '176,214,208', .6); g.restore(); }); g.restore(); }
+      else blob(r, r, '160,205,200', .55);
+    }
     else {
       r = Math.min(Math.max(o.s * u / 2, [7, 13, 30][ins]), 125); f = o.n.indexOf('Carène') > 0 ? '226,190,196' : '176,206,214';
       if (o.s == 7 && o.mi == 1) { blob(r, r * .6, f, .6, .6); blob(r * .6, r, f, .5, .6); }
