@@ -357,7 +357,7 @@ function fiche(anime) {
   $('o-no').textContent = 'Vue simulée' + (E.ins == 2 ? (oc ? ' dans l’oculaire de ' + nombre(oc) + NB + 'mm (' + grossit(oc) + '×, champ ' + deg(champ(oc)) + '°) d’un ' + telNom() : ' au télescope') + ', tournée d’un demi-tour comme dans un Newton ou un Dobson' + (o.k && o.k != 'lu' ? ' ; disque agrandi 8 fois pour les détails, écart des lunes à l’échelle' : '') + ' ; orientation indicative, l’angle réel dépend de l’heure' : '')
     + (nu == null ? '. Nuages non pris en compte.' : ', par ciel clair. Nuages à cette heure : ' + pct(nu) + '.');
   scient(o, p, oc);
-  $('o-sc').open = E.sc != null ? !!E.sc : E.ins == 2;      /* ouverte d'office au télescope, puis comme on l'a laissée */
+  $('o-sc').open = E.sc != null ? !!E.sc : E.ins == 2 && matchMedia('(min-width: 700px)').matches;      /* ouverte d'office au télescope sur un grand écran (fermée sur téléphone), puis comme on l'a laissée */
   clearInterval(oTimer);
   if (!anime) return peindre(og, o, p, 1, E.ins, oT);
   var t = Date.now(); oTimer = setInterval(function () { var f = Math.min(1, (Date.now() - t) / 260); peindre(og, o, p, .8 + .2 * f, E.ins, oT); if (f == 1) clearInterval(oTimer); }, 30);
@@ -812,7 +812,10 @@ function physique(P) {
       : p >= .5 ? 'Planètes et doubles serrées, quand l’air est calme.'
       : 'Grossissement vide : l’image grandit sans nouveau détail, et les corps flottants de l’œil gênent.';
   }
-  $('t-pc').innerHTML = '<dl>' + d.map(function (y) { return '<dt>' + y[0] + '</dt><dd>' + y[1] + '</dd>'; }).join('') + '</dl><h3>À chaque oculaire</h3>'
+  /* chaque sujet plié, son chiffre clé visible dans le titre ; ceux qu'on a ouverts le restent quand l'écran se recalcule */
+  var K = ['f/' + fr(N, 1), fr(arrondi(D * D / 49)) + ' fois l’œil', fr(da, 2) + '″', 'mag.' + NB + fr(rg, 1), fr(2 * a) + '′ de champ net', 'D/r₀ ≈ ' + fr(dr), P && P.froid ? '≈' + NB + P.froid + NB + 'min' : ''],
+    ouv = [].map.call($('t-pc').querySelectorAll('details'), function (x) { return x.open; });
+  $('t-pc').innerHTML = d.map(function (y, i) { return '<details' + (ouv[i] ? ' open' : '') + '><summary><span>' + y[0] + '</span><b>' + K[i] + '</b></summary><p>' + y[1] + '</p></details>'; }).join('') + '<h3>À chaque oculaire</h3>'
     + (l.length ? '<div class="poc">' + l.map(function (f) { var p = f / N; return '<div><b>' + nombre(f) + NB + 'mm · ' + grossit(f) + '×</b><span>pupille de sortie ' + fr(p, 1) + NB + 'mm · champ vrai ' + deg(champ(f)) + '°</span><small>' + usage(p) + '</small></div>'; }).join('') + '</div>'
       + '<p class="note">Pupille de sortie : focale de l’oculaire ÷ (F/D), soit D ÷ G. Champ vrai ≈ 52° ÷ G pour des oculaires de 52°. Les usages par pupille sont des repères d’observateurs.</p>'
       : '<p class="note">Ajoute tes oculaires plus haut : leur pupille de sortie et leur champ s’afficheront ici.</p>');
