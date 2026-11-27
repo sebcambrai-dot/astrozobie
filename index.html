@@ -11,57 +11,57 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icone.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icone-192.png">
+<link rel="preload" href="archivo.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header id="haut">
+  <div id="bascule" aria-label="Moitié de l’appli"><button type="button" data-m="prep" class="p">Préparer</button><button type="button" data-m="now">Maintenant</button></div>
   <button type="button" id="lieu-b" aria-label="Changer de lieu">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>
-    <span><b id="lieu-n">Cambrai</b><small id="lieu-s"></small></span>
+    <span><b id="lieu-n">Cambrai</b><small id="hl-j"></small></span>
   </button>
-  <div id="horloge"><b id="hl-h"></b><small id="hl-j"></small></div>
+  <div id="horloge" hidden><b id="hl-h"></b><small id="lieu-s"></small></div>
 </header>
 <div id="visite" hidden><span id="visite-t"></span><button type="button" id="visite-b">Rentrer chez moi</button></div>
 
 <nav id="onglets" aria-label="Écrans">
   <button type="button" data-p="soir" class="p"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.500A8 8 0 0 1 9.500 4 8 8 0 1 0 20 14.500z"/></svg><span>Ce soir</span></button>
-  <button type="button" data-p="carte"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg><span>Carte</span></button>
-  <button type="button" data-p="voir"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12c4-6.500 16-6.500 20 0-4 6.500-16 6.500-20 0z"/><circle cx="12" cy="12" r="3"/></svg><span>À voir</span></button>
-  <button type="button" data-p="tele"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.500 13.500 18 5.500l2.200 3.800-14.500 8zM11.500 13.300 7.500 21M11.500 13.300l4 7.700"/></svg><span>Télescope</span></button>
+  <button type="button" data-p="ciel"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18 9.500 9l5 5L20 5"/><circle cx="4" cy="18" r="1.300"/><circle cx="9.500" cy="9" r="1.300"/><circle cx="14.500" cy="14" r="1.300"/><circle cx="20" cy="5" r="1.300"/></svg><span>Le ciel</span></button>
+  <button type="button" data-p="tele"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.500 13.500 18 5.500l2.200 3.800-14.500 8zM11.500 13.300 7.500 21M11.500 13.300l4 7.700"/></svg><span>Matériel</span></button>
   <button type="button" data-p="jeux"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.600 5.600 6.100.700-4.500 4.200 1.200 6-5.400-3-5.400 3 1.200-6L3.300 9.300l6.100-.700z"/></svg><span>Jeux</span></button>
+  <button type="button" class="rouge-b" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="lampe" d="M8 3h8l-1.500 6v11a1 1 0 0 1-1 1h-3.500a1 1 0 0 1-1-1V9z"/><path d="M8.500 6h7M12 13v2.500"/><path class="rayons" d="M5 4.500 3.200 3.200M19 4.500l1.800-1.300M4 9H2M20 9h2"/></svg><span>Rouge</span></button>
 </nav>
 
 <main>
 <!-- ============ Ce soir ============ -->
 <section id="p-soir">
-  <div class="bloc" id="verdict">
-    <svg id="jauge" viewBox="0 0 150 150" role="img" aria-label="Note du ciel"><g id="j-grad"></g>
-      <circle id="j-arc" cx="75" cy="75" r="60" fill="none" stroke-width="8" stroke-dasharray="377" stroke-dashoffset="377" transform="rotate(-90 75 75)"/>
-      <text id="j-n" x="75" y="88" text-anchor="middle">0</text><text id="j-s" x="75" y="108" text-anchor="middle">sur 100</text></svg>
-    <div id="v-txt">
-      <p id="v-quand"></p>
-      <h1 id="v-titre"></h1>
-      <p id="v-detail"></p>
-      <p id="v-creneau"></p>
-      <div class="rangee"><button type="button" id="v-carte" class="p">Voir le ciel à cette heure</button><button type="button" id="v-maj">Actualiser la météo</button><button type="button" id="v-retour" hidden>Revenir à ce soir</button></div>
-      <p class="note" id="v-meteo"></p>
-    </div>
+  <div id="verdict">
+    <p id="v-quand"></p>
+    <div id="v-tete"><h1 id="v-titre"></h1><p id="v-note"><b id="j-n">0</b> sur 100</p></div>
+    <p id="v-creneau"></p>
+    <p id="v-detail"></p>
+    <p id="v-rouge" hidden><i></i><span></span></p>
   </div>
-  <div class="grille">
-    <div class="bloc" id="b-heures"><h2>La nuit, heure par heure</h2><div id="heures"></div><p id="h-note"></p><p class="note" id="h-aide">Le gris descend avec les nuages, le point signale la Lune levée<span id="h-fl">, la petite flèche montre l’heure en cours</span>. Touche une heure, ou glisse le doigt, pour son détail.</p></div>
-    <div class="bloc"><h2 id="top-t">À voir ce soir</h2><div id="top"></div><p class="note" id="top-n">Les « poings » : un poing fermé, bras tendu, couvre environ 10° de ciel.</p><button type="button" id="top-plus" class="large">Tout ce qu’on peut voir</button></div>
-    <div class="bloc"><h2>Prochains rendez-vous</h2><p class="note" id="cd-t"></p><div id="cd"></div><div id="rdv"></div></div>
-    <div class="bloc" id="b-nuits"><h2>Les 30 prochaines nuits</h2>
-      <div id="bars"></div><div class="ax" id="ax"><span></span><span></span><span></span></div>
-      <div id="info"></div>
-      <div class="rangee"><button type="button" id="b0">Ce soir</button><button type="button" id="bb" class="clair">Meilleure nuit</button><button type="button" id="bp" aria-label="Nuit précédente">Précédente</button><button type="button" id="bn" aria-label="Nuit suivante">Suivante</button></div>
-      <p class="note" id="b-note"></p></div>
-    
+  <div id="b-heures"><h2>Nuages, heure par heure</h2><div id="heures"></div><p id="h-note"></p><p class="note" id="h-aide">Le gris descend avec les nuages, le point signale la Lune levée<span id="h-fl">, la petite flèche montre l’heure en cours</span>. Touche une heure, ou glisse le doigt, pour son détail.</p>
+    <div class="rangee"><button type="button" id="v-carte">Voir le ciel à cette heure</button><button type="button" id="v-maj">Actualiser la météo</button><button type="button" id="v-retour" hidden>Revenir à ce soir</button></div>
+    <p class="note" id="v-meteo"></p></div>
+  <button type="button" class="ligne" id="r-nuits"><span>Les 30 prochaines nuits, les rendez-vous</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+  <div id="s-droite">
+  <div id="soiree">
+    <h2 id="s-tit"></h2>
+    <p id="s-sub"></p>
+    <p id="s-av"></p>
+    <div id="s-geant"><div class="geant" id="s-cd"></div><p id="s-hor"></p></div>
+    <button type="button" id="s-go" class="commencer"><span>Commencer la soirée</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+    <button type="button" class="ligne" id="r-prog"><span>Le programme complet, étape par étape</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></button>
+  </div>
+  <div id="b-top"><h2 id="top-t">À voir ce soir</h2><div id="top"></div><p class="note" id="top-n">Les « poings » : un poing fermé, bras tendu, couvre environ 10° de ciel.</p><button type="button" id="top-plus" class="large">Tout ce qu’on peut voir</button></div>
   </div>
   <p class="note" id="credit">Météo : <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo.com</a>. Pour l’obtenir, ta position arrondie au kilomètre est envoyée à ce service ; rien d’autre ne quitte ton appareil.</p>
 </section>
 
-<!-- ============ Carte ============ -->
+<!-- ============ Le ciel : la carte, puis ce qu’on peut voir ============ -->
 <section id="p-carte" hidden>
   <div class="deux">
     <div class="bloc" id="c-g"><canvas id="ciel" width="1200" height="1200" aria-label="Carte du ciel"></canvas><p class="note" id="c-aide">Tiens la carte au-dessus de ta tête, le N vers le nord : l’est se retrouve à gauche, comme dans le ciel. Les voiles gris sont les nuages prévus à cette heure.</p></div>
@@ -86,32 +86,20 @@
     <div class="choix"><label>Ton ciel</label><div class="seg" id="o-sk"><button type="button">Ville</button><button type="button">Village</button><button type="button">Campagne</button></div></div>
     <div id="o-z"><button type="button" id="o-now">Maintenant</button><div class="curseur"><input type="range" id="o-tr" min="0" max="1000" aria-label="Heure de la nuit"><div class="ticks" id="o-tk"></div></div></div>
   </div>
-  <div class="deux">
-    <div class="bloc" id="o-m"><div class="seg" id="o-f"><button type="button">Tout</button><button type="button">Système solaire</button><button type="button">Étoiles</button><button type="button">Ciel profond</button></div><div id="o-ls"></div></div>
-    <div class="bloc" id="o-fiche">
-      <div id="o-v"><canvas id="oeil" width="1020" height="1020" aria-label="Vue simulée dans l’instrument"></canvas><div class="seg" id="o-oc" hidden></div></div>
-      <div id="o-r"><div id="o-q"></div><h1 id="o-n"></h1><p id="o-e"></p>
-        <div id="o-d"><div id="o-co"></div><div id="o-al"></div></div><div id="o-cu"></div><p class="note" id="o-po">Un poing fermé, bras tendu, couvre environ 10° dans le ciel.</p>
-        <div class="rangee"><button type="button" id="o-sn"></button><button type="button" id="o-su" class="clair">Surprends-moi</button><button type="button" id="o-vi">Viser avec le téléphone</button></div>
-        <p class="note" id="o-no"></p>
-        <details id="o-sc"><summary>Fiche scientifique</summary><dl id="o-sd"></dl><div id="o-sx"></div><button type="button" class="lien" id="o-calc">Comment c’est calculé, et les sources</button></details></div>
-    </div>
+  <div>
+    <div id="o-m"><div class="seg" id="o-f"><button type="button">Tout</button><button type="button">Système solaire</button><button type="button">Étoiles</button><button type="button">Ciel profond</button></div><div id="o-ls"></div></div>
   </div>
 </section>
 
-<!-- ============ Télescope ============ -->
+<!-- ============ Matériel : télescope, oculaires, physique, comment c’est calculé ============ -->
 <section id="p-tele" hidden>
   <div class="bloc" id="t-tete">
     <p id="t-quand"></p>
-    <h1>Ton programme au télescope</h1>
+    <h1>Ton matériel</h1>
     <p id="t-resume"></p>
-    <div class="rangee"><button type="button" id="t-regl">Changer de télescope</button></div>
+    <div class="rangee"><button type="button" id="t-regl">Le programme de la soirée</button></div>
   </div>
   <div class="tele">
-    <div class="bloc" id="t-cond"><h2>Ce soir au télescope</h2><div id="t-cs"></div></div>
-    <div class="bloc" id="t-prog"><h2>La soirée, étape par étape</h2><p id="t-pt"></p>
-      <div class="choix"><label>Durée</label><div class="seg" id="t-du"><button type="button">2 h</button><button type="button">3 h</button><button type="button">5 h</button><button type="button">Toute la nuit</button></div></div>
-      <ol id="t-ls"></ol><p class="note" id="t-no"></p></div>
     <div class="bloc" id="t-mat"><h2>Ton télescope</h2>
       <div class="seg" id="t-pr"><button type="button">114 mm<small>Newton</small></button><button type="button">150 mm<small>Newton</small></button><button type="button">203 mm<small>Dobson 8 pouces</small></button><button type="button">254 mm<small>Dobson 10 pouces</small></button><button type="button">305 mm<small>Dobson 12 pouces</small></button></div>
       <label class="coche"><input type="checkbox" id="t-goto"><span>Pointage automatique (GoTo) : l’appli propose les deux étoiles pour l’aligner</span></label>
@@ -160,7 +148,7 @@
     </details>
     <details><summary>Le programme de la soirée</summary>
       <p>Grille de 10 minutes. Qualité d’une cible à chaque pas : 0,5 × min(marge, 3) + min(h, 65°)/30 (pour les planètes /15, leur image souffrant davantage de l’air traversé), moins ce que la Lune et l’aube coûtent aux objets diffus, et moins une pénalité au-dessus de 72°.</p>
-      <p>À chaque créneau, l’appli prend la cible au meilleur score : intérêt de l’objet + 0,6 × qualité − poids × (meilleure qualité qui lui reste − qualité actuelle), avec un bonus quand elle va se coucher et quand elle est voisine de la précédente. Le poids croît avec l’intérêt et vaut 8 pour les planètes : une belle cible attend son meilleur moment. La Lune passe à la fin, ou, si elle se couche pendant le programme, avant de descendre sous 28°, et jamais sous les nuages. Méthode gloutonne : bonne, pas optimale.</p>
+      <p>À chaque créneau, l’appli prend la cible au meilleur score : intérêt de l’objet + 0,6 × qualité − poids × (meilleure qualité qui lui reste − qualité actuelle), avec un bonus quand elle va se coucher et quand elle est voisine de la précédente. Le poids croît avec l’intérêt et vaut 8 pour les planètes : une belle cible attend son meilleur moment. La Lune passe à la fin, ou, si elle se couche pendant le programme, avant de descendre sous 28° quand c’est possible, et jamais sous les nuages. Méthode gloutonne : bonne, pas optimale.</p>
       <p>Oculaire proposé : le plus fort qui montre l’objet en entier avec de la marge (champ d’au moins 1,4 fois sa taille, 2,5 fois pour un amas ouvert), sans dépasser 2 D ni ce que l’air permet (250× calme, 160× moyen, 100× agité ou sous 25° de hauteur) ; pour les galaxies et les nébuleuses, une pupille de sortie d’au moins 2 mm.</p>
     </details>
     <details><summary>Météo</summary>
@@ -197,11 +185,32 @@
   </div>
 </section>
 
+
+<!-- ============ Maintenant : une étape par écran ============ -->
+<section id="p-now" hidden>
+  <div id="m-haut"><button type="button" id="m-prep"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg>Préparer</button><p id="m-rang"></p></div>
+  <div id="m-corps">
+    <div id="m-tete"><h1 id="m-n"></h1><button type="button" id="m-fiche">Fiche<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 15 7-7 7 7"/></svg></button></div>
+    <div id="m-regl">
+      <div id="m-dir"></div>
+      <div class="reglage"><span class="lib">Hauteur</span><b class="val" id="m-alt"></b><span class="sous" id="m-po"></span></div>
+      <div class="reglage" id="m-ocb"><span class="lib" id="m-ocl">Oculaire</span><b class="val" id="m-oc"></b><span class="sous" id="m-gr"></span></div>
+    </div>
+    <div id="m-vue"><canvas id="m-oeil" width="1020" height="1020" aria-label="Vue simulée"></canvas><p id="m-leg"></p></div>
+    <p id="m-w"></p>
+    <p id="m-txt"></p>
+    <div id="m-act"><button type="button" id="m-vu"></button></div>
+    <div id="m-ins" class="seg" aria-label="Instrument"><button type="button">Œil nu</button><button type="button">Jumelles</button><button type="button">Télescope</button></div>
+  </div>
+  <div id="m-dock"><button type="button" id="m-prev"></button><button type="button" id="m-next"></button><button type="button" class="rouge-b" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="lampe" d="M8 3h8l-1.500 6v11a1 1 0 0 1-1 1h-3.500a1 1 0 0 1-1-1V9z"/><path d="M8.500 6h7M12 13v2.500"/><path class="rayons" d="M5 4.500 3.200 3.200M19 4.500l1.800-1.300M4 9H2M20 9h2"/></svg><span>Rouge</span></button></div>
+</section>
+
 <!-- ============ Versions (en bas de chaque écran) : ajouter une ligne en tête à chaque mise en ligne ============ -->
 <footer id="pied">
   <details id="versions">
-    <summary><span>AstroZobie <b>version 0.3</b></span><small>Ce qui a changé</small></summary>
+    <summary><span>AstroZobie <b>version 0.4</b></span><small>Ce qui a changé</small></summary>
     <ol>
+      <li><b>0.4</b><time>27 novembre 2026</time><p>Nouvelle présentation pensée pour le téléphone : Préparer le jour, Maintenant au télescope (une cible par écran, en très grand) ; fiche en plein écran ; l’écran passe seul en rouge à la nuit noire, avec le bouton Rouge toujours à portée. Sur ordinateur, le menu passe sur le côté.</p></li>
       <li><b>0.3</b><time>27 novembre 2026</time><p>Lecture allégée : la physique du télescope pliée sujet par sujet, son chiffre clé dans le titre ; la fiche scientifique fermée d’office sur téléphone. Le numéro de version et ce journal, ici.</p></li>
       <li><b>0.2</b><time>27 novembre 2026</time><p>L’appli s’appelle AstroZobie, avec sa nouvelle adresse : <span class="nb">sebcambrai-dot.github.io/astrozobie</span>.</p></li>
       <li><b>0.1</b><time>27 novembre 2026</time><p>Première version partagée, sous le nom « Observatoire » : ce soir, carte, à voir, jeux, et l’onglet Télescope (programme de la soirée, les 110 objets de Messier, fiches scientifiques, physique du télescope, comment c’est calculé).</p></li>
@@ -209,6 +218,43 @@
   </details>
 </footer>
 </main>
+
+
+<!-- ============ Fiche d'un astre, plein écran ============ -->
+<div id="fiche" class="volet" hidden>
+  <div class="v-in" tabindex="-1" id="o-fiche" role="dialog" aria-modal="true" aria-labelledby="o-n">
+    <div class="v-tete"><button type="button" class="rouge-b" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="lampe" d="M8 3h8l-1.500 6v11a1 1 0 0 1-1 1h-3.500a1 1 0 0 1-1-1V9z"/><path d="M8.500 6h7M12 13v2.500"/><path class="rayons" d="M5 4.500 3.200 3.200M19 4.500l1.800-1.300M4 9H2M20 9h2"/></svg><span>Rouge</span></button><button type="button" class="v-x" id="fi-x">Fermer<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg></button></div>
+
+      <div id="o-titre"><h1 id="o-n"></h1><div id="o-q"></div></div>
+      <div id="o-v"><canvas id="oeil" width="1020" height="1020" aria-label="Vue simulée dans l’instrument"></canvas><div class="seg" id="o-oc" hidden></div></div>
+      <div id="o-r"><p id="o-e"></p>
+        <div id="o-d"><div id="o-co"></div><div id="o-al"></div></div><div id="o-cu"></div><p class="note" id="o-po">Un poing fermé, bras tendu, couvre environ 10° dans le ciel.</p>
+        <div class="rangee"><button type="button" id="o-sn"></button><button type="button" id="o-su" class="clair">Surprends-moi</button><button type="button" id="o-vi">Viser avec le téléphone</button></div>
+        <p class="note" id="o-no"></p>
+        <details id="o-sc"><summary>Fiche scientifique</summary><dl id="o-sd"></dl><div id="o-sx"></div><button type="button" class="lien" id="o-calc">Comment c’est calculé, et les sources</button></details></div>
+      </div>
+</div>
+
+<!-- ============ Feuilles qui montent du bas ============ -->
+<div id="v-nuits" class="volet" hidden>
+  <div class="v-in" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="vn-t">
+    <div class="v-tete"><h1 id="vn-t">Les 30 prochaines nuits</h1><button type="button" class="v-x">Fermer<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg></button></div>
+    <div id="b-nuits"><div id="bars"></div><div class="ax" id="ax"><span></span><span></span><span></span></div>
+      <div id="info"></div>
+      <div class="rangee"><button type="button" id="b0">Ce soir</button><button type="button" id="bb" class="clair">Meilleure nuit</button><button type="button" id="bp" aria-label="Nuit précédente">Précédente</button><button type="button" id="bn" aria-label="Nuit suivante">Suivante</button></div>
+      <p class="note" id="b-note"></p></div>
+    <h2 class="v-h2">Prochains rendez-vous</h2><p class="note" id="cd-t"></p><div id="cd"></div><div id="rdv"></div>
+  </div>
+</div>
+<div id="v-prog" class="volet" hidden>
+  <div class="v-in" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="vp-t">
+    <div class="v-tete"><h1 id="vp-t">Ta soirée au télescope</h1><button type="button" class="v-x">Fermer<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 9 7 7 7-7"/></svg></button></div>
+    <div id="t-prog"><h2>La soirée, étape par étape</h2><p id="t-pt"></p>
+      <div class="choix"><label>Durée</label><div class="seg" id="t-du"><button type="button">2 h</button><button type="button">3 h</button><button type="button">5 h</button><button type="button">Toute la nuit</button></div></div>
+      <ol id="t-ls"></ol><p class="note" id="t-no"></p></div>
+    <div id="t-cond"><h2>Ce soir au télescope</h2><div id="t-cs"></div></div>
+  </div>
+</div>
 
 <!-- ============ Lieu ============ -->
 <div id="feuille" hidden>
@@ -236,5 +282,6 @@
 <script src="savant.js"></script>
 <script src="distances.js"></script>
 <script src="app.js"></script>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="f-rouge" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="0.299 0.587 0.114 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"/></filter></svg>
 </body>
 </html>

@@ -21,7 +21,7 @@ function peindre(g, o, p, z, ins, T) {
   function spread(n, q, x, s, c) { for (; n--;) { a = rnd() * P2; b = q * Math.sqrt(rnd()) * (.35 + .65 * rnd()); dot(x + Math.cos(a) * b, Math.sin(a) * b, .5 + Math.pow(rnd(), 3) * s, c); } }
   function vrai(k) { return DIA[k] / (p.D || 1) / 2 * u / 60; }                     /* rayon réel du disque, en unités de la toile */
   function disque(k) { return Math.max(2.6, Math.min(100, vrai(k) * 8)); }
-  g.clearRect(0, 0, 340, 340); g.save(); g.beginPath(); g.arc(170, 170, 168, 0, 7); g.clip(); g.fillStyle = ins ? '#02070b' : '#081c26'; g.fillRect(0, 0, 340, 340);
+  g.clearRect(0, 0, 340, 340); g.save(); g.beginPath(); g.arc(170, 170, 168, 0, 7); g.clip(); g.fillStyle = ins ? '#000' : '#06080b'; g.fillRect(0, 0, 340, 340);
   g.translate(170, 170); g.scale(z, z);
   for (i = 0; i < [60, 150, 90][ins]; i++) dot(rnd() * 380 - 190, rnd() * 380 - 190, .25 + Math.pow(rnd(), 4) * 1.1, 'rgba(' + ['255,255,255', '205,222,255', '255,232,205'][i % 3] + ',' + (.2 + rnd() * .5) + ')');
   /* au sud de l'équateur, la Lune et les planètes se voient retournées ; un télescope de Newton (ou Dobson) tourne l'image d'un demi-tour, sans effet miroir */
@@ -98,7 +98,7 @@ function peindre(g, o, p, z, ins, T) {
     }
   }
   g.restore(); dot(170, 170, 168, (h = g.createRadialGradient(170, 170, 132, 170, 170, 168), h.addColorStop(0, 'rgba(0,0,0,0)'), h.addColorStop(1, 'rgba(0,0,0,.8)'), h));
-  g.strokeStyle = '#3d6a75'; for (i = 0; i < 120; i++) { a = i * P2 / 120; r = i % 10 ? i % 5 ? 165 : 163 : 159.5; g.lineWidth = i % 10 ? .6 : 1.1; g.beginPath(); g.moveTo(170 + 168 * Math.cos(a), 170 + 168 * Math.sin(a)); g.lineTo(170 + r * Math.cos(a), 170 + r * Math.sin(a)); g.stroke(); } g.lineWidth = 1.4; g.beginPath(); g.arc(170, 170, 168.5, 0, 7); g.stroke();
+  g.strokeStyle = '#4a525c'; for (i = 0; i < 120; i++) { a = i * P2 / 120; r = i % 10 ? i % 5 ? 165 : 163 : 159.5; g.lineWidth = i % 10 ? .6 : 1.1; g.beginPath(); g.moveTo(170 + 168 * Math.cos(a), 170 + 168 * Math.sin(a)); g.lineTo(170 + r * Math.cos(a), 170 + r * Math.sin(a)); g.stroke(); } g.lineWidth = 1.4; g.beginPath(); g.arc(170, 170, 168.5, 0, 7); g.stroke();
 }
 
 /* ---------- carte du ciel entier : toile de 440 unités, zénith au centre, nord en haut, est à gauche ---------- */
@@ -110,12 +110,12 @@ function versCarte(p) { var r = (90 - p.alt) / 90 * 200; return [220 - r * S(p.a
 function carte(g, T, sel, nuages) {
   var bx = [], PO = {}, su = pos('so', T), s = hel('so', T / 864e5 - 10956), f = borne((su.alt + 12) / 18), a = borne((-su.alt - 4) / 8), q, p, x, i, gr, m;
   g.clearRect(0, 0, 440, 440);
-  g.fillStyle = '#eef6f6'; g.font = '600 12px ' + POLICE; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#efede7'; g.font = '600 12px ' + POLICE; g.textAlign = 'center'; g.textBaseline = 'middle';
   g.fillText('N', 220, 9); g.fillText('S', 220, 432); g.fillText('E', 9, 220); g.fillText('O', 431, 220);
   g.save(); g.beginPath(); g.arc(220, 220, 200, 0, 7); g.clip();
   gr = g.createRadialGradient(220, 220, 20, 220, 220, 200);
-  gr.addColorStop(0, 'rgb(' + (3 + 50 * f | 0) + ',' + (12 + 110 * f | 0) + ',' + (20 + 165 * f | 0) + ')');
-  gr.addColorStop(1, 'rgb(' + (13 + 110 * f | 0) + ',' + (48 + 130 * f | 0) + ',' + (62 + 160 * f | 0) + ')');
+  gr.addColorStop(0, 'rgb(' + (6 + 50 * f | 0) + ',' + (8 + 100 * f | 0) + ',' + (11 + 160 * f | 0) + ')');
+  gr.addColorStop(1, 'rgb(' + (17 + 100 * f | 0) + ',' + (21 + 140 * f | 0) + ',' + (26 + 180 * f | 0) + ')');
   g.fillStyle = gr; g.fillRect(0, 0, 440, 440);
   x = borne(1 - Math.abs(su.alt + 4) / 12);
   if (x) { q = versCarte({ alt: 0, az: su.az }); gr = g.createRadialGradient(q[0], q[1], 0, q[0], q[1], 230); gr.addColorStop(0, 'rgba(255,150,70,' + .85 * x + ')'); gr.addColorStop(.5, 'rgba(200,80,120,' + .3 * x + ')'); gr.addColorStop(1, 'rgba(200,80,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, 440, 440); }
@@ -133,22 +133,22 @@ function carte(g, T, sel, nuages) {
   x.forEach(function (q) { if (q) bx.push([q[0] - 3, q[1], 6, 7]); });
   if (a) {
     g.fillStyle = 'rgba(255,255,255,' + .55 * a + ')'; FOND.forEach(function (b) { p = hor(b[0], b[1], T, s); if (p.alt > 0) { q = versCarte(p); g.fillRect(q[0], q[1], .6 + b[2], .6 + b[2]); } });
-    g.strokeStyle = 'rgba(160,205,215,' + .38 * a + ')'; g.beginPath(); for (i = 0; i < TRAITS.length; i += 2) if (x[TRAITS[i]] && x[TRAITS[i + 1]]) { g.moveTo(x[TRAITS[i]][0], x[TRAITS[i]][1]); g.lineTo(x[TRAITS[i + 1]][0], x[TRAITS[i + 1]][1]); } g.stroke();
+    g.strokeStyle = 'rgba(200,204,210,' + .38 * a + ')'; g.beginPath(); for (i = 0; i < TRAITS.length; i += 2) if (x[TRAITS[i]] && x[TRAITS[i + 1]]) { g.moveTo(x[TRAITS[i]][0], x[TRAITS[i]][1]); g.lineTo(x[TRAITS[i + 1]][0], x[TRAITS[i + 1]][1]); } g.stroke();
     g.font = '10.5px ' + POLICE; g.textAlign = 'left';
-    x.forEach(function (q, i) { if (q) { g.fillStyle = 'rgba(255,255,255,' + a + ')'; g.beginPath(); g.arc(q[0], q[1], ETOILES[i][0] ? 1.9 : 1.4, 0, 7); g.fill(); if (ETOILES[i][0]) { g.fillStyle = 'rgba(165,195,202,' + .9 * a + ')'; m = nom(ETOILES[i][0], q, 6); if (m) g.fillText(ETOILES[i][0], m[0], m[1]); } } });
+    x.forEach(function (q, i) { if (q) { g.fillStyle = 'rgba(255,255,255,' + a + ')'; g.beginPath(); g.arc(q[0], q[1], ETOILES[i][0] ? 1.9 : 1.4, 0, 7); g.fill(); if (ETOILES[i][0]) { g.fillStyle = 'rgba(184,188,194,' + .9 * a + ')'; m = nom(ETOILES[i][0], q, 6); if (m) g.fillText(ETOILES[i][0], m[0], m[1]); } } });
   }
   if (su.alt > 0) { q = versCarte(su); gr = g.createRadialGradient(q[0], q[1], 0, q[0], q[1], 40); gr.addColorStop(0, '#fff'); gr.addColorStop(.2, '#ffe9a0'); gr.addColorStop(1, 'rgba(255,220,120,0)'); g.fillStyle = gr; g.fillRect(q[0] - 40, q[1] - 40, 80, 80); }
   g.font = '600 12.5px ' + POLICE; g.textAlign = 'left';
   ASTRES.forEach(function (b) {
     if (!PO[b[0]]) return; p = pos(b[0], T); q = PO[b[0]];
-    if (sel == b[0]) { g.strokeStyle = '#ff8f5a'; g.lineWidth = 1.6; g.beginPath(); g.arc(q[0], q[1], 20, 0, 7); g.stroke(); g.lineWidth = 1; }
+    if (sel == b[0]) { g.strokeStyle = '#e8c97a'; g.lineWidth = 1.6; g.beginPath(); g.arc(q[0], q[1], 20, 0, 7); g.stroke(); g.lineWidth = 1; }
     if (b[0] == 'lu') {
       m = versCarte(su); x = C(p.lon - su.lon); g.save(); g.translate(q[0], q[1]); g.rotate(Math.atan2(m[1] - q[1], m[0] - q[0]));
-      g.shadowColor = '#fff'; g.shadowBlur = 14; g.fillStyle = '#1c3640'; g.beginPath(); g.arc(0, 0, 11, 0, 7); g.fill(); g.shadowBlur = 0;
+      g.shadowColor = '#fff'; g.shadowBlur = 14; g.fillStyle = '#1e242b'; g.beginPath(); g.arc(0, 0, 11, 0, 7); g.fill(); g.shadowBlur = 0;
       g.fillStyle = b[2]; g.beginPath(); g.arc(0, 0, 11, -Math.PI / 2, Math.PI / 2); g.ellipse(0, 0, 11 * Math.abs(x), 11, 0, Math.PI / 2, x > 0 ? -Math.PI / 2 : Math.PI * 1.5, x > 0); g.fill(); g.restore();
     }
     else { g.shadowColor = b[2]; g.shadowBlur = 12; g.fillStyle = b[2]; g.beginPath(); g.arc(q[0], q[1], b[0] == 've' || b[0] == 'ju' ? 4.5 : 3.2, 0, 7); g.fill(); g.shadowBlur = 0; }
-    g.fillStyle = f > .6 ? '#10203a' : '#fff'; m = q.v; g.fillText(b[1], m[0], m[1]);
+    g.fillStyle = f > .6 ? '#0a0c0f' : '#fff'; m = q.v; g.fillText(b[1], m[0], m[1]);
   });
   /* voile de nuages, d'après la météo de cette heure-là */
   if (nuages > .05) {
@@ -157,7 +157,7 @@ function carte(g, T, sel, nuages) {
     for (i = 0; i < Math.round(nuages * 16); i++) { sd = (sd * 16807) % 2147483647; x = sd % 400 + 20; sd = (sd * 16807) % 2147483647; g.beginPath(); g.ellipse(x, sd % 400 + 20, 60 + sd % 50, 26 + sd % 20, 0, 0, 7); g.fill(); }
     g.filter = 'none';
   }
-  g.restore(); g.strokeStyle = '#3d6a75';
+  g.restore(); g.strokeStyle = '#4a525c';
   for (i = 0; i < 72; i++) { m = i * Math.PI / 36; x = i % 18 ? i % 6 ? 197 : 194 : 191; g.lineWidth = i % 6 ? .7 : 1.2; g.beginPath(); g.moveTo(220 + 200 * Math.cos(m), 220 + 200 * Math.sin(m)); g.lineTo(220 + x * Math.cos(m), 220 + x * Math.sin(m)); g.stroke(); }
   g.lineWidth = 1.5; g.beginPath(); g.arc(220, 220, 200.5, 0, 7); g.stroke(); g.lineWidth = 1;
   return PO;
@@ -174,27 +174,27 @@ function vecteur(p) { return [C(p.alt) * S(p.az), C(p.alt) * C(p.az), S(p.alt)];
 function scal(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
 function viseur(g, w, h, M, T, cible, liste) {
   var A = axes(M.al, M.be, M.ga), F = Math.max(w, h) / (2 * Math.tan(30 * R)), vis = { alt: Math.asin(A.v[2]) / R, az: rev(Math.atan2(A.v[0], A.v[1]) / R) }, i, q, ok = 0;
-  g.clearRect(0, 0, w, h); g.fillStyle = '#04121a'; g.fillRect(0, 0, w, h);
+  g.clearRect(0, 0, w, h); g.fillStyle = '#000'; g.fillRect(0, 0, w, h);
   function ecran(p) { var u = vecteur(p), z = scal(u, A.v); return z > .05 ? [w / 2 + scal(u, A.d) / z * F, h / 2 - scal(u, A.h) / z * F, z] : null; }
   /* horizon et points cardinaux */
-  g.strokeStyle = '#3d6a75'; g.lineWidth = 1.5; g.beginPath(); var prem = 1;
+  g.strokeStyle = '#4a525c'; g.lineWidth = 1.5; g.beginPath(); var prem = 1;
   for (i = 0; i <= 360; i += 4) { q = ecran({ alt: 0, az: i }); if (q) { prem ? g.moveTo(q[0], q[1]) : g.lineTo(q[0], q[1]); prem = 0; } else prem = 1; } g.stroke();
-  g.font = '600 15px ' + POLICE; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#8fabb0';
+  g.font = '600 15px ' + POLICE; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = '#a9aeb5';
   ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'].forEach(function (n, k) { q = ecran({ alt: 2, az: k * 45 }); if (q) g.fillText(n, q[0], q[1]); });
   liste.forEach(function (o) {
     q = ecran(o.p); if (!q) return; var c = o === cible;
     g.fillStyle = o.c; g.shadowColor = o.c; g.shadowBlur = 10; g.beginPath(); g.arc(q[0], q[1], o.gros ? 9 : c ? 6 : 4, 0, 7); g.fill(); g.shadowBlur = 0;
-    g.fillStyle = c ? '#ff8f5a' : '#eef6f6'; g.font = (c ? '700 ' : '600 ') + '14px ' + POLICE; g.fillText(o.n, q[0], q[1] - 18);
-    if (c) { g.strokeStyle = '#ff8f5a'; g.lineWidth = 2; g.beginPath(); g.arc(q[0], q[1], 26, 0, 7); g.stroke(); ok = Math.hypot(q[0] - w / 2, q[1] - h / 2) < 40; }
+    g.fillStyle = c ? '#e8c97a' : '#efede7'; g.font = (c ? '700 ' : '600 ') + '14px ' + POLICE; g.fillText(o.n, q[0], q[1] - 18);
+    if (c) { g.strokeStyle = '#e8c97a'; g.lineWidth = 2; g.beginPath(); g.arc(q[0], q[1], 26, 0, 7); g.stroke(); ok = Math.hypot(q[0] - w / 2, q[1] - h / 2) < 40; }
   });
   /* réticule */
-  g.strokeStyle = ok ? '#ff8f5a' : 'rgba(238,246,246,.7)'; g.lineWidth = 1.5; g.beginPath(); g.arc(w / 2, h / 2, 40, 0, 7);
+  g.strokeStyle = ok ? '#e8c97a' : 'rgba(239,237,231,.7)'; g.lineWidth = 1.5; g.beginPath(); g.arc(w / 2, h / 2, 40, 0, 7);
   g.moveTo(w / 2 - 56, h / 2); g.lineTo(w / 2 - 24, h / 2); g.moveTo(w / 2 + 24, h / 2); g.lineTo(w / 2 + 56, h / 2); g.moveTo(w / 2, h / 2 - 56); g.lineTo(w / 2, h / 2 - 24); g.moveTo(w / 2, h / 2 + 24); g.lineTo(w / 2, h / 2 + 56); g.stroke();
   /* flèche vers la cible quand elle est hors de l'écran */
   if (cible && !ok) {
     var u = vecteur(cible.p), dx = scal(u, A.d), dy = -scal(u, A.h), n = Math.hypot(dx, dy) || 1; q = ecran(cible.p);
     if (!q || q[0] < 30 || q[0] > w - 30 || q[1] < 30 || q[1] > h - 30) {
-      g.save(); g.translate(w / 2, h / 2); g.rotate(Math.atan2(dy / n, dx / n)); g.fillStyle = '#ff8f5a'; g.beginPath(); g.moveTo(96, 0); g.lineTo(66, -15); g.lineTo(66, 15); g.closePath(); g.fill(); g.restore();
+      g.save(); g.translate(w / 2, h / 2); g.rotate(Math.atan2(dy / n, dx / n)); g.fillStyle = '#e8c97a'; g.beginPath(); g.moveTo(96, 0); g.lineTo(66, -15); g.lineTo(66, 15); g.closePath(); g.fill(); g.restore();
     }
   }
   return { vis: vis, ok: ok };

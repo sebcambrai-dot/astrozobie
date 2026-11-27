@@ -138,7 +138,6 @@ var noteAff = 0;
 function soir() {
   var B = NUITS[selN], N = B.N, quand = selN ? jour(N.m) : 'Ce soir', d = [], t0 = Date.now(), de = noteAff;
   /* jauge */
-  $('j-arc').style.strokeDashoffset = 377 * (1 - B.s / 100);
   (function pas() { var f = Math.min(1, (Date.now() - t0) / 300); noteAff = Math.round(de + (B.s - de) * f); $('j-n').textContent = noteAff; if (f < 1) setTimeout(pas, 30); })();
   $('v-quand').textContent = (selN ? jour(N.m) : ceSoir()) + ', ' + (L().gps ? 'là où tu es' : L().ou || 'à ' + L().n);
   $('v-retour').hidden = !selN; $('v-maj').hidden = !!selN;      /* le retour prend la place du bouton météo : la page ne bouge pas sous le doigt */ $('v-retour').textContent = 'Revenir à ' + ceSoir().toLowerCase(); $('b0').textContent = ceSoir();
@@ -157,14 +156,14 @@ function soir() {
   }
   $('v-maj').textContent = meteoEtat == 'attente' ? 'Météo en cours…' : 'Actualiser la météo';
   $('v-meteo').textContent = !M ? '' : meteoEtat == 'vieille' ? 'Attention : prévision du ' + jour(M.maj, { weekday: 'long', day: 'numeric', month: 'long' }) + ' à ' + hm(M.maj) + '. Mise à jour impossible pour le moment.' : 'Météo mise à jour à ' + hm(M.maj) + '.';
-  heures(N); haut3(); barres(); rendezVous();
+  heures(N); haut3(); barres(); rendezVous(); soiree(); rougeAnnonce();
 }
 function heures(N) {
   var t, h = '', n = Math.round((N.b - N.a) / 36e5), i = 0, now = Date.now();
   if (!N.jour) for (t = heureRonde(N.a); t <= N.b; t += 36e5, i++) {
     var c = nuages(t), su = pos('so', t).alt, mo = pos('lu', t).alt > 0, a = borne((su + 18) / 17);
     h += '<button type="button" class="h' + (Math.abs(t - selH) < 18e5 ? ' s' : '') + (t <= now && now < t + 36e5 ? ' n' : '') + '" data-t="' + t + '" aria-label="' + hh(t) + (c == null ? '' : ', nuages ' + pct(c)) + '">'
-      + '<u style="background:rgb(' + (9 + 150 * a | 0) + ',' + (30 + 105 * a | 0) + ',' + (44 + 96 * a | 0) + ')">' + (c == null ? '<em>?</em>' : '<i style="height:' + Math.round(c * 100) + '%"></i>') + (mo ? '<s></s>' : '') + '</u>'
+      + '<u style="background:rgb(' + (21 + 50 * a | 0) + ',' + (25 + 56 * a | 0) + ',' + (30 + 66 * a | 0) + ')">' + (c == null ? '<em>?</em>' : '<i style="height:' + Math.round(c * 100) + '%"></i>') + (mo ? '<s></s>' : '') + '</u>'
       + '<b>' + (n > 12 && i % 2 && Math.abs(t - selH) >= 18e5 ? '' : hmp(t)[0]) + '</b></button>';
   }
   $('heures').innerHTML = h || '<p class="note">Pas de nuit à découper : le Soleil ne se couche pas ici en ce moment.</p>';
@@ -231,6 +230,7 @@ function rendezVous() {
   rebours();
 }
 function rebours() {
+  if (page == 'soir' && tProg && !selN) soireeCompte();
   if (!RDV.length || page != 'soir') return;
   var s = Math.max(0, Math.floor((RDV[0][0] - Date.now()) / 1e3));
   $('cd').innerHTML = [[Math.floor(s / 86400), 'jours'], [Math.floor(s / 3600) % 24, 'h'], [Math.floor(s / 60) % 60, 'min'], [s % 60, 's']].map(function (x) { return '<div>' + x[0] + '<small>' + x[1] + '</small></div>'; }).join('');
@@ -241,7 +241,7 @@ var cg, cT = 0, cN, cLive = 0, cAuto = 0, cSel = '', cTimer = 0, cPO = {}, cA, c
 function carteNuit(N, T) {
   cN = N; cA = N.jour ? N.m : N.a - 36e5; cB = N.jour ? N.m + 864e5 : N.b + 36e5; $('c-sl').max = Math.round((cB - cA) / 3e5);
   var c = [], i, a, h = '', t, pas;
-  for (i = 0; i <= 32; i++) { a = borne((pos('so', cA + (cB - cA) * i / 32).alt + 18) / 17); c.push('rgb(' + (12 + 170 * a | 0) + ',' + (18 + 100 * a | 0) + ',' + (38 + 70 * a | 0) + ') ' + (i / .32).toFixed(1) + '%'); }
+  for (i = 0; i <= 32; i++) { a = borne((pos('so', cA + (cB - cA) * i / 32).alt + 18) / 17); c.push('rgb(' + (21 + 90 * a | 0) + ',' + (25 + 100 * a | 0) + ',' + (30 + 120 * a | 0) + ') ' + (i / .32).toFixed(1) + '%'); }
   $('c-sl').style.background = 'linear-gradient(90deg,' + c + ')';
   pas = (cB - cA) > 5e7 ? 108e5 : 72e5;
   for (t = heureRonde(cA + 18e5); t < cB - 18e5; t += pas) h += '<span style="left:' + ((t - cA) / (cB - cA) * 100).toFixed(1) + '%">' + hh(t) + '</span>';
@@ -329,7 +329,7 @@ function voir(anime) {
   function sec(t, n, x) { return n ? '<h2>' + t + '<span>' + n + '</span></h2>' + x : ''; }
   $('o-ls').innerHTML = (sec((couvert ? 'Derrière les nuages' : 'À voir') + (direct ? ' maintenant' : ' vers ' + hm(oT)), c, h) + sec('Plus tard cette nuit', d, tard) + sec('Hors de portée pour le moment', e, bas)) || '<p class="note">Rien dans cette famille ne passe au-dessus de l’horizon cette nuit, vu d’ici.</p>';
   $('o-pr').innerHTML = '<b>' + Object.keys(E.vus).length + '</b> / ' + OBJETS.length + '<small>observés</small>';
-  for (i = 0; i <= 20; i++) { a = borne((pos('so', NU.a + (NU.b - NU.a) * i / 20).alt + 18) / 17); grad.push('rgb(' + (12 + 170 * a | 0) + ',' + (18 + 100 * a | 0) + ',' + (38 + 70 * a | 0) + ') ' + i * 5 + '%'); }
+  for (i = 0; i <= 20; i++) { a = borne((pos('so', NU.a + (NU.b - NU.a) * i / 20).alt + 18) / 17); grad.push('rgb(' + (21 + 90 * a | 0) + ',' + (25 + 100 * a | 0) + ',' + (30 + 120 * a | 0) + ') ' + i * 5 + '%'); }
   $('o-tr').style.background = 'linear-gradient(90deg,' + grad + ')';
   for (h = '', t = heureRonde(NU.a + 36e5); t < NU.b - 36e5; t += (NU.b - NU.a) > 5e7 ? 108e5 : 72e5) h += '<span style="left:' + ((t - NU.a) / (NU.b - NU.a) * 100).toFixed(1) + '%">' + hh(t) + '</span>';
   $('o-tk').innerHTML = h;
@@ -428,7 +428,12 @@ function scient(o, p, oc) {
   $('o-sd').innerHTML = h.join('');
   $('o-sx').innerHTML = (nat ? '<p>' + txt(nat) + lien(x.nsrc) + '</p>' : '') + (x.fait ? '<p>' + txt(x.fait) + lien(x.fsrc) + '</p>' : '');
 }
-function ouvrirObjet(n) { oSel = n; oChoisi = 1; montrer('voir'); var s = document.querySelector('#o-ls .o.s'); if (s) s.scrollIntoView({ block: 'nearest' }); }
+function ouvrirObjet(n) { oSel = n; oChoisi = 1; ocSel.n = -1; voir(1); ficheOuvre(); }
+/* la fiche d'un astre : plein écran sur téléphone, fenêtre au milieu sur ordinateur */
+var ficheRetour = 0;
+function ficheOuvre(retour) { ficheRetour = retour || 0; volet('fiche', 1); }
+function ficheFerme() { fermer('fiche'); }
+function ficheFin() { volet('fiche', 0); if (ficheRetour) { ficheRetour = 0; oLive = 1; if (page == 'ciel') voir(); } if (page == 'now') etape(); }
 
 /* ============ viseur ============ */
 var visOn = 0, visM = null, visRaf = 0;
@@ -622,14 +627,22 @@ function chercher(q) {
 }
 
 /* ============ navigation et rafraîchissement ============ */
-function montrer(p) {
-  page = p; ['soir', 'carte', 'voir', 'tele', 'jeux'].forEach(function (x) { $('p-' + x).hidden = x != p; });
-  [].forEach.call($('onglets').children, function (b) { b.className = b.dataset.p == p ? 'p' : ''; });
-  if (p != 'carte') carteStop();
-  try { history.replaceState(null, '', p == 'soir' ? location.pathname + location.search : '#' + p); } catch (e) { }
-  scrollTo(0, 0); tout();
+/* deux moitiés : Préparer (Ce soir, Le ciel, Matériel, Jeux) et Maintenant (une étape par écran, au télescope) */
+var PAGES = { soir: ['soir'], ciel: ['carte', 'voir'], tele: ['tele'], jeux: ['jeux'], now: ['now'] };
+function pageDe(h) { return h == 'carte' || h == 'voir' ? 'ciel' : h == 'mat' ? 'tele' : PAGES[h] ? h : 'soir'; }
+function montrer(p, garde, pop) {
+  p = pageDe(p); page = p; var vus = PAGES[p];
+  ['soir', 'carte', 'voir', 'tele', 'jeux', 'now'].forEach(function (x) { $('p-' + x).hidden = vus.indexOf(x) < 0; });
+  [].forEach.call($('onglets').querySelectorAll('[data-p]'), function (b) { b.className = b.dataset.p == p ? 'p' : ''; });
+  [].forEach.call($('bascule').children, function (b) { b.className = (b.dataset.m == 'now') == (p == 'now') ? 'p' : ''; });
+  document.body.classList.toggle('maintenant', p == 'now');
+  if (p != 'ciel') carteStop();
+  /* Maintenant ajoute une entrée à l'historique : le bouton retour du téléphone ramène à Préparer au lieu de quitter l'appli */
+  var adr = p == 'soir' ? location.pathname + location.search : '#' + p, st = history.state || {};
+  try { if (!pop) { if (p == 'now' && !st.now) history.pushState({ now: 1 }, '', adr); else if (!(p == 'now' && st.now)) history.replaceState(null, '', adr); } } catch (e) { }
+  if (!garde) scrollTo(0, 0); tout();
 }
-function tout() { entete(); if (page == 'soir') soir(); else if (page == 'carte') carteOuvre(); else if (page == 'voir') voir(); else if (page == 'tele') tele(); else jeux(); }
+function tout() { entete(); rouge(); if (page == 'soir') soir(); else if (page == 'ciel') { carteOuvre(); voir(); } else if (page == 'tele') tele(); else if (page == 'now') etape(); else jeux(); }
 
 /* ============ écran « Télescope » : le réglage du matériel et le programme de la soirée ============ */
 /* télescopes courants : type, diamètre et focale en millimètres */
@@ -709,12 +722,14 @@ function programme() {
   P.te = te; P.humide = te != null && ro != null && te - ro < 3;
   P.froid = Math.round(Math.max(15, Math.min(120, telD() / 305 * ecart / 15 * 60)) / 5) * 5;
   P.sortie = debut - P.froid * 6e4;
-  P.ev.push({ t: Math.max(P.sortie, Math.min(now, debut)), k: 'sortie', b: P.sortie > now ? 'Sors le télescope' : 'Sors le télescope dès maintenant',
-    s: 'Il lui faut environ ' + P.froid + NB + 'min pour se mettre à la température de l’air' + (te == null ? '' : ' (' + Math.round(te) + NB + '°C prévus)') + ' : avant, l’image tremble.' });
+  var tSortie = Math.max(P.sortie, Math.min(now, debut)), retard = P.sortie < now - 3e5;
+  P.ev.push({ t: tSortie, k: 'sortie', b: !retard ? 'Sors le télescope' : 'Sors le télescope dès maintenant',
+    s: 'Il lui faut environ ' + P.froid + NB + 'min pour se mettre à la température de l’air' + (te == null ? '' : ' (' + Math.round(te) + NB + '°C prévus)') + ' : avant, l’image tremble.'
+      + (retard ? ' S’il sort seulement maintenant, commence par les faibles grossissements : il ne sera stable que vers ' + hm(Math.max(now, tSortie) + P.froid * 6e4) + '.' : '') });
   var pa = alignement(debut), l = oculaires(), fd = nombre((telF() / telD()).toFixed(1));
   function ou(x) { return x.n + ' ' + direction(x.p) + ', à ' + Math.round(x.p.alt) + '°'; }
   /* avant d'observer : collimation (un Newton ouvert la perd au moindre choc), chercheur, puis alignement du pointage automatique */
-  P.ev.push({ t: Math.max(P.sortie + 3e5, debut - 9e5), k: 'colli', b: 'Vérifie la collimation', s: 'À f/' + fd + ', un léger décalage des miroirs se voit dès 150× : contrôle au laser ou à l’œilleton, puis sur une étoile un peu défocalisée, dont les anneaux doivent être bien concentriques.' });
+  P.ev.push({ t: Math.max(P.sortie + 3e5, debut - 9e5, tSortie), k: 'colli', b: 'Vérifie la collimation', s: 'À f/' + fd + ', un léger décalage des miroirs dégrade l’image aux forts grossissements : contrôle au laser ou à l’œilleton, puis sur une étoile un peu défocalisée, dont les anneaux doivent être bien concentriques.' });
   P.ev.push({ t: debut, k: 'align', b: 'Règle le chercheur' + (P_HAUTE ? ' sur ' + P_HAUTE.n : ''), s: (P_HAUTE ? ou(P_HAUTE) + '. ' : '') + 'Centre l’étoile dans l’oculaire' + (l.length ? ' de ' + nombre(l[0]) + NB + 'mm' : '') + ', puis règle le chercheur dessus' + (E.tel.goto ? ' : il servira à centrer les étoiles d’alignement.' : '.') });
   if (E.tel.goto) P.ev.push({ t: debut, k: 'align', b: pa ? 'Aligne le pointage sur ' + pa[0].n + ' et ' + pa[1].n : 'Aligne le pointage',
     s: 'Départ : base de niveau, tube à l’horizontale pointé vers le nord. ' + (pa ? 'Puis ' + ou(pa[0]) + ' ; ' + ou(pa[1]) + ' : deux étoiles bien écartées, pour un pointage juste dans la plus grande partie du ciel.' : 'Aucune paire d’étoiles brillantes bien placée à cette heure : prends celles que propose la raquette.') });
@@ -775,7 +790,7 @@ function programme() {
     else if (bas) w = 'Bientôt trop bas : à voir tout de suite.';
     else if (o.g == 3 && lr && t < lr && lr - t < 72e5 && lune(lr).il > .3) w = 'Avant le lever de la Lune.';
     else if (o.g == 3 && EV[j].tw <= 0 && EV[k2].tw > 0) w = 'Avant que l’aube ne pâlisse le ciel.';
-    else if (p.alt >= x.max - 3 && p.alt <= 78 && x.mk < nG - 2) w = 'À son plus haut ' + (nuit ? 'de la nuit' : 'de la soirée') + ' : l’air traversé y est le plus mince.';      /* pas pour un astre qui monte encore à la fin du programme */
+    else if (p.alt >= x.max - 3 && p.alt <= 78 && x.mk < nG - 2) w = p.alt >= x.max - 1 ? 'À son plus haut ' + (nuit ? 'de la nuit' : 'de la soirée') + ' : l’air traversé y est le plus mince.' : 'Près de son plus haut ' + (nuit ? 'de la nuit' : 'de la soirée') + ' (' + Math.round(x.max) + '° vers ' + hm(debut + x.mk * PAS) + ') : l’air traversé y est presque le plus mince.';      /* pas pour un astre qui monte encore à la fin du programme */
     P.ev.push({ t: t, k: 'cible', n: x.n, f: ocAuto(o, t, p.alt), p: p, w: w });
     t += dureeCible(o);
   }
@@ -821,7 +836,7 @@ function physique(P) {
       : '<p class="note">Ajoute tes oculaires plus haut : leur pupille de sortie et leur champ s’afficheront ici.</p>');
 }
 function tele() {
-  var P = tProg = programme(), now = Date.now(), x, a, l = oculaires();
+  var P = prog(), now = Date.now(), x, a, l = oculaires();
   $('p-tele').className = E.tel.ok ? '' : 'neuf';
   $('t-quand').textContent = ceSoir() + ', ' + (L().gps ? 'là où tu es' : L().ou || 'à ' + L().n);
   $('t-resume').textContent = telNom() + (l.length ? ', oculaires de ' + l.map(nombre).join(' et ') + NB + 'mm' : ', aucun oculaire') + (E.tel.goto ? ', pointage automatique' : '') + '.'
@@ -861,8 +876,170 @@ function tele() {
 function teleRegle() { E.tel.ok = 1; regleTel(); sauver(); tele(); }
 
 
+
+/* ============ le programme, gardé tant que rien ne change (réglages, météo, lieu, quart d'heure) ============ */
+function progCle() { return [M && M.maj, E.tel.p, E.tel.goto, E.tel.oc.join(), E.duree, E.ciel, L().lat, L().lon, NU.m, Math.floor(Date.now() / 9e5)].join('|'); }
+function prog() { var k = progCle(); if (!tProg || tProg.cle != k) { tProg = programme(); tProg.cle = k; } return tProg; }
+
+/* ============ Ce soir : le bloc « Sors le télescope » et le compte à rebours du programme ============ */
+function soiree() {
+  $('soiree').hidden = !!selN; if (selN) return;
+  var P = prog(), now = Date.now(), sub = '';
+  $('s-geant').hidden = $('s-av').hidden = !!P.rien;
+  if (P.rien) { $('s-tit').textContent = P.rien; $('s-sub').textContent = ''; $('s-go').firstChild.textContent = 'Ce qu’on voit maintenant'; return; }
+  $('s-tit').textContent = P.sortie > now ? 'Sors le télescope à ' + hm(P.sortie) : now < P.debut ? 'Sors le télescope dès maintenant' : now < P.fin ? 'Le programme au télescope a commencé' : 'Le programme au télescope est fini';
+  if (now < P.debut) sub = 'Il lui faut environ ' + P.froid + NB + 'min pour se mettre à la température de l’air' + (P.te == null ? '' : ' (' + Math.round(P.te) + NB + '°C prévus)') + '.';
+  if (P.couvert) sub += ' Couvert toute la nuit : le programme est prêt pour une éclaircie.';
+  else if (P.attente) sub += ' Il commence après les nuages.';
+  if (!E.tel.ok) sub += ' Calculé pour un ' + telNom() + ' : mets le tien dans Matériel.';
+  $('s-sub').textContent = sub.trim();
+  $('s-go').firstChild.textContent = now < P.fin ? 'Commencer la soirée' : 'Revoir la soirée';
+  soireeCompte();
+}
+function soireeCompte() {
+  var P = tProg, now = Date.now(); if (!P || P.rien) return;
+  var avant = now < P.debut, x = avant ? P.debut : P.fin, ms = Math.max(0, x - now), h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+  $('s-geant').hidden = $('s-av').hidden = now >= P.fin;
+  $('s-av').textContent = avant ? 'Début du programme au télescope dans' : 'Fin du programme dans';
+  var g = h ? h + '<small>h</small>' + ('0' + m).slice(-2) : m + '<small>min</small>';
+  if ($('s-cd').innerHTML != g) $('s-cd').innerHTML = g;
+  $('s-hor').textContent = 'à ' + hm(x) + (avant ? ', ' + P.nb + NB + 'cible' + (P.nb > 1 ? 's' : '') : '');
+}
+
+/* ============ mode rouge : rouge pur sur noir, pour garder la vision de nuit ============
+   Il s'allume seul à la nuit noire (Soleil à 18° sous l'horizon) ; un choix fait à la main vaut pour la nuit en cours. */
+function rougeAuto(t) { return !NU.jour && pos('so', t).alt < -18; }
+function rougeOn() { return E.rm && E.rm.m == NU.m ? !!E.rm.on : rougeAuto(Date.now()); }
+var rougeVu = null;
+function rouge() {
+  var on = rougeOn(); if (on === rougeVu) return; rougeVu = on;
+  document.documentElement.classList.toggle('rouge', on);
+  [].forEach.call(document.querySelectorAll('.rouge-b'), function (b) { b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+  var m = document.querySelector('meta[name=theme-color]'); if (m) m.content = on ? '#000000' : '#0a0c0f';
+}
+function rougeBascule() { E.rm = { on: rougeOn() ? 0 : 1, m: NU.m }; sauver(); rouge(); if (page == 'soir') rougeAnnonce(); }
+function rougeAnnonce() {
+  var now = Date.now(), t = NU.d1, s = '', main = E.rm && E.rm.m == NU.m;
+  if (!selN && !NU.jour) {
+    if (rougeOn() && rougeAuto(now) && !main) s = 'Écran passé en rouge : la nuit noire a commencé.';
+    else if (main && !E.rm.on && t && now < NU.d2) s = 'Rouge éteint à la main pour cette nuit.';
+    else if (t && t > now && !main) s = 'L’écran passera seul en rouge à ' + hm(t) + '.';
+  }
+  $('v-rouge').hidden = !s; $('v-rouge').lastChild.textContent = s;
+}
+
+/* ============ les feuilles : 30 nuits, programme complet, fiche d'un astre ============ */
+/* chaque feuille ouverte ajoute une entrée à l'historique : le bouton retour la referme */
+function voletFin(id) { if (id == 'fiche') ficheFin(); else volet(id, 0); }
+function fermer(id) { var st = history.state || {}; if (st.v == id) history.back(); else voletFin(id); }
+function quitterNow() { if ((history.state || {}).now) history.back(); else montrer('soir'); }
+addEventListener('popstate', function (e) {
+  var st = e.state || {};
+  ['fiche', 'v-nuits', 'v-prog'].forEach(function (id) { if (!$(id).hidden && st.v != id) voletFin(id); });
+  if (page == 'now' && !st.now) montrer('soir', 0, 1); else if (page != 'now' && st.now) montrer('now', 0, 1);
+});
+function volet(id, on) {
+  var v = $(id), st = history.state || {};
+  if (on && v.hidden && st.v != id) try { history.pushState(Object.assign({}, st, { v: id }), ''); } catch (e) { }
+  v.hidden = !on;
+  document.body.classList.toggle('fige', [].some.call(document.querySelectorAll('.volet'), function (x) { return !x.hidden; }));
+  if (on) { var x = v.querySelector('.v-in'); x.scrollTop = 0; x.focus({ preventScroll: true }); }
+}
+
+/* ============ Maintenant : une étape par écran ============
+   Au télescope, les étapes du programme (sortie, collimation, alignement, cibles, Lune, fin), figées tant qu'on y est ;
+   à l'œil nu ou aux jumelles, les astres visibles en ce moment, du plus beau au moins beau. */
+var mE = [], mI = 0, mg = null, mNuit = 0;
+function etapesCalc() {
+  var l = [], P, now = Date.now(), T, e, i;
+  mNuit = NU.m;
+  if (E.ins == 2) { P = prog(); if (!P.rien) l = P.ev.slice(); }
+  if (!l.length) {
+    T = refTemps(); e = env(T);
+    visibles(E.ins, T, e).sort(function (a, b) { return interet(b) - interet(a); }).slice(0, 24).forEach(function (x) {
+      l.push({ k: 'cible', n: x.n, t: T, p: x.p, f: E.ins == 2 ? ocAuto(OBJETS[x.n], T, x.p.alt) : 0, libre: 1 });
+    });
+  }
+  var avant = mE[mI]; mE = l; mI = 0; mIns = E.ins;
+  if (avant && avant.n != null) for (i = 0; i < l.length; i++) if (l[i].n === avant.n) { mI = i; return; }      /* on garde l'astre qu'on regardait, s'il est encore là */
+  if (l.length && !l[0].libre) for (i = 0; i < l.length; i++) if (l[i].t <= now + 3e5) mI = i;      /* l'étape en cours */
+}
+var mIns = -1;
+function commencer() { if (!mE.length || mIns != E.ins || mNuit != NU.m || (mE[0] && mE[0].libre)) etapesCalc(); montrer('now'); }
+var ETAPE_C = { sortie: 'Sortie', colli: 'Collimation', align: 'Réglages', lune: 'La Lune', nuage: 'Nuages', fin: 'Fin' };
+function etapeNom(v) { return v.k == 'cible' ? OBJETS[v.n].n : ETAPE_C[v.k] || v.b; }      /* nom court, pour les boutons du bas */
+function etapeT(v) { var now = Date.now(); return v.libre ? Math.max(now, v.t) : now > v.t && now < v.t + 108e5 ? now : v.t; }      /* de jour, la liste libre vaut pour le début de la nuit */      /* en retard sur le programme : la position de maintenant */
+function boussole(p) {
+  var k = '', i;
+  for (i = 0; i < 36; i++) k += '<path d="M50 4v' + (i % 9 ? 3 : 7) + '" transform="rotate(' + i * 10 + ' 50 50)"/>';
+  return '<svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="46"/><g class="gr">' + k + '</g><text x="50" y="27">N</text><text x="50" y="85">S</text><text x="80" y="56">E</text><text x="20" y="56">O</text><path class="ne" transform="rotate(' + p.az + ' 50 50)" d="M50 16 55 50 50 57 45 50z"/></svg><span>' + (p.alt > 0 ? direction(p) : 'couché') + '</span>';
+}
+function etapeHaut() {
+  var v = mE[mI], now = Date.now(), r = '', c, n;
+  if (!v) { $('m-rang').innerHTML = ''; return; }
+  if (v.libre) r = (mI + 1) + ' sur ' + mE.length + '<br>' + (v.t > now + 6e4 ? 'visible vers ' + hm(v.t) : 'visible maintenant');
+  else if (v.k == 'cible') {
+    c = 0; n = 0; mE.forEach(function (x, i) { if (x.k == 'cible') { n++; if (i <= mI) c++; } });
+    r = 'Cible ' + c + ' sur ' + n + '<br>' + (v.t < now - 6e5 ? 'prévue à ' : 'à ') + hm(v.t);
+  } else r = 'Étape ' + (mI + 1) + ' sur ' + mE.length + '<br>à ' + hm(v.t);
+  $('m-rang').innerHTML = r;
+}
+function etape() {
+  if (!mE.length || mNuit != NU.m) etapesCalc();
+  var v = mE[mI], now = Date.now(), cible = v && v.k == 'cible', o, T, p, f, d;
+  segment('m-ins', E.ins);
+  etapeHaut();
+  ['m-regl', 'm-vue', 'm-fiche', 'm-act'].forEach(function (x) { $(x).hidden = !cible; });
+  if (!v) {
+    $('m-n').textContent = NU.jour ? 'Pas de nuit ici' : 'Rien à portée';
+    $('m-w').textContent = ''; $('m-txt').textContent = NU.jour ? 'Le Soleil ne se couche pas ici en ce moment.' : 'Rien n’est assez haut avec ce matériel en ce moment. Essaie un autre instrument, juste en dessous, ou reviens plus tard.';
+  } else if (!cible) {
+    $('m-n').textContent = v.b; $('m-w').textContent = (v.t > now ? 'À ' : 'Depuis ') + hm(v.t); $('m-txt').textContent = v.s;
+  } else {
+    o = OBJETS[v.n]; T = etapeT(v); p = at(o, T); f = E.ins == 2 ? v.f || ocAuto(o, T, p.alt) : 0;
+    $('m-n').textContent = o.n;
+    $('m-dir').innerHTML = boussole(p);
+    $('m-alt').textContent = Math.round(Math.max(0, p.alt)) + '°'; $('m-po').textContent = p.alt > 0 ? poings(p) : 'sous l’horizon';
+    $('m-ocb').hidden = !f;
+    if (f) { $('m-oc').innerHTML = nombre(f) + '<small>mm</small>'; $('m-gr').textContent = grossit(f) + '×'; }
+    if (!mg) { mg = $('m-oeil').getContext('2d'); mg.scale(3, 3); }
+    CHAMP[2] = f ? champ(f) : 1.2; mag(o, p); peindre(mg, o, p, 1, E.ins, T);
+    $('m-leg').textContent = 'Vue simulée' + (E.ins == 2 ? (o.k && o.k != 'lu' ? ', disque agrandi 8 fois' : '') + ', tournée d’un demi-tour comme dans l’oculaire' : E.ins ? ' aux jumelles' : ' à l’œil nu');
+    $('m-w').textContent = v.w || (p.alt < 5 ? 'Sous l’horizon à cette heure.' : '');
+    d = E.ins == 2 ? texteTel(o, telD()) : o.d[E.ins];
+    $('m-txt').textContent = E.ins < o.mi || !d ? ilFaut(Math.max(o.mi, E.ins + 1)) + '.' : d;
+    d = E.vus[o.n]; $('m-vu').textContent = d ? 'Vu le ' + d : 'Je l’ai vu'; $('m-vu').className = d ? 'p' : '';
+  }
+  var a = mE[mI - 1], b = mE[mI + 1];
+  $('m-prev').disabled = !a; $('m-prev').innerHTML = a ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span>' + (a.libre ? '' : '<i>' + hm(a.t) + '</i>') + '<b>' + txt(etapeNom(a)) + '</b></span>' : '<span><b>Début</b></span>';
+  $('m-prev').setAttribute('aria-label', a ? 'Étape précédente : ' + etapeNom(a) : 'Première étape');
+  $('m-next').innerHTML = b ? '<span><i>Suivante' + (b.libre ? '' : ', ' + hm(b.t)) + '</i><b>' + txt(etapeNom(b)) + '</b></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>'
+    : '<span><i>C’est fini</i><b>Retour à Préparer</b></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg>';
+}
+function etapeVa(d) { var i = mI + d; if (i < 0) return; if (i >= mE.length) return d > 0 ? quitterNow() : 0; mI = i; scrollTo(0, 0); etape(); }
+$('m-prev').onclick = function () { etapeVa(-1); };
+$('m-next').onclick = function () { etapeVa(1); };
+$('m-ins').onclick = function (e) { var i = rang(e, this); if (i >= 0) { E.ins = i; sauver(); etapesCalc(); etape(); } };
+$('m-vu').onclick = function () { var v = mE[mI]; if (v && v.k == 'cible') { vuBascule(OBJETS[v.n].n); etape(); } };
+$('m-fiche').onclick = function () { var v = mE[mI]; if (!v || v.k != 'cible') return; oLive = 0; oT = etapeT(v); oSel = v.n; oChoisi = 1; ocSel = { n: v.n, f: v.f || 0 }; voir(1); ficheOuvre(1); };
+(function () {      /* glisser le doigt de côté pour changer d'étape */
+  var x0 = null, y0 = 0, z = $('m-corps');
+  z.addEventListener('pointerdown', function (e) { if (e.pointerType != 'mouse') { x0 = e.clientX; y0 = e.clientY; } });
+  z.addEventListener('pointerup', function (e) { if (x0 == null) return; var dx = e.clientX - x0, dy = e.clientY - y0; x0 = null; if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) etapeVa(dx < 0 ? 1 : -1); });
+  z.addEventListener('pointercancel', function () { x0 = null; });
+})();
+
 /* ---------- gestes ---------- */
-$('onglets').onclick = function (e) { var b = e.target.closest('button'); if (b) montrer(b.dataset.p); };
+$('onglets').onclick = function (e) { var b = e.target.closest('[data-p]'); if (b) montrer(b.dataset.p); };
+$('bascule').onclick = function (e) { var b = e.target.closest('button'); if (b) { if (b.dataset.m == 'now') commencer(); else if (page == 'now') quitterNow(); } };
+$('m-prep').onclick = quitterNow;
+[].forEach.call(document.querySelectorAll('.rouge-b'), function (b) { b.onclick = rougeBascule; });
+[].forEach.call(document.querySelectorAll('.volet'), function (v) {
+  v.onclick = function (e) { if (e.target == v || e.target.closest('.v-x')) fermer(v.id); };
+});
+$('r-nuits').onclick = function () { volet('v-nuits', 1); };
+$('r-prog').onclick = $('t-regl').onclick = function () { tele(); volet('v-prog', 1); };
+$('s-go').onclick = function () { if (!prog().rien) { E.ins = 2; sauver(); } commencer(); };      /* le bloc parle du programme au télescope */
 $('lieu-b').onclick = function () { feuille(1); };
 $('f-x').onclick = function () { var premier = !E.accueil; E.accueil = 1; sauver(); feuille(0); if (premier) bulle('Lieu de départ : ' + E.lieu.n + '. Touche son nom, en haut, pour mettre le tien.'); };
 $('feuille').onclick = function (e) { if (e.target == this) $('f-x').onclick(); };
@@ -871,14 +1048,17 @@ $('f-suivi').onchange = function () { E.suivi = this.checked ? 1 : 0; sauver(); 
 $('f-form').onsubmit = function (e) { e.preventDefault(); var q = $('f-q').value.trim(); if (q.length > 1) chercher(q); else { $('f-msg').textContent = ''; $('f-res').innerHTML = '<p class="note">Tape au moins deux lettres du nom de ta ville.</p>'; } };
 $('f-fav').onclick = function (e) { var b = e.target.closest('button'); if (b) choisir(E.lieux[+b.dataset.i]); };
 $('visite-b').onclick = function () { visite = null; changerLieu(); bulle('De retour : ' + E.lieu.n + '.'); };
-addEventListener('keydown', function (e) { if (e.key == 'Escape') { if (!$('vis').hidden) viserFerme(); else if (!$('feuille').hidden) $('f-x').onclick(); } });
+addEventListener('keydown', function (e) {
+  if (e.key == 'Escape') { if (!$('vis').hidden) viserFerme(); else if (!$('feuille').hidden) $('f-x').onclick(); else if (!$('fiche').hidden) ficheFerme(); else if (!$('v-prog').hidden) fermer('v-prog'); else if (!$('v-nuits').hidden) fermer('v-nuits'); }
+  else if (page == 'now' && $('fiche').hidden && !e.target.closest('input')) { if (e.key == 'ArrowRight') etapeVa(1); else if (e.key == 'ArrowLeft') etapeVa(-1); }
+});
 
 $('heures').onclick = function (e) { var b = e.target.closest('.h'); if (b) { selH = +b.dataset.t; hChoisie = 1; heures(NUITS[selN].N); } };
-$('v-carte').onclick = function () { var n = Date.now(); if (!selN && (NU.jour || (selH <= n && n < selH + 36e5))) { montrer('carte'); $('c-now').onclick(); } else allerCarte(selH); };
+$('v-carte').onclick = function () { var n = Date.now(); if (!selN && (NU.jour || (selH <= n && n < selH + 36e5))) { montrer('ciel'); $('c-now').onclick(); } else allerCarte(selH); };
 $('v-retour').onclick = function () { nuitSel(0); };
 $('v-maj').onclick = function () { meteoEtat = 'attente'; soir(); meteo(1).then(function () { bulle(meteoEtat == 'ok' ? 'Météo à jour.' : 'Météo injoignable pour le moment.'); }); };
 $('top').onclick = function (e) { var b = e.target.closest('.o'); if (b) ouvrirObjet(+b.dataset.n); };
-$('top-plus').onclick = function () { montrer('voir'); };
+$('top-plus').onclick = function () { montrer('ciel'); $('p-voir').scrollIntoView({ block: 'start' }); };
 function nuitSel(i) { selN = Math.max(0, Math.min(29, i)); selH = 0; hChoisie = 0; soir(); }
 $('bars').onclick = function (e) { var b = e.target.closest('button'); if (b) nuitSel(+b.dataset.i); };
 /* barres fines : on peut aussi glisser le doigt dessus, la sélection suit */
@@ -919,21 +1099,20 @@ $('o-sk').onclick = function (e) { var i = rang(e, this); if (i >= 0) { E.ciel =
 $('o-f').onclick = function (e) { var i = rang(e, this); if (i >= 0) { oFlt = i; $('o-ls').scrollTop = 0; voir(); } };
 $('o-tr').oninput = function () { oLive = 0; oT = NU.a + (NU.b - NU.a) * this.value / 1000; voir(); };
 $('o-now').onclick = function () { oLive = 1; voir(); };
-$('o-ls').onclick = function (e) { var b = e.target.closest('.o'); if (b) { oSel = +b.dataset.n; ocSel.n = -1; oChoisi = 1; voir(1); if (innerWidth < 700) $('o-fiche').scrollIntoView({ behavior: calme() ? 'auto' : 'smooth', block: 'start' }); } };
+$('o-ls').onclick = function (e) { var b = e.target.closest('.o'); if (b) { oSel = +b.dataset.n; ocSel.n = -1; oChoisi = 1; voir(1); ficheOuvre(); } };
 $('o-su').onclick = function () {
   var v = visibles(E.ins, oT, oE).filter(function (x) { return x.n != oSel && (!oFlt || OBJETS[x.n].g == oFlt); });
   if (!v.length) return bulle('Rien d’autre à portée à cette heure.');
-  oSel = v[Math.floor(Math.random() * v.length)].n; oChoisi = 1; voir(1); var s = document.querySelector('#o-ls .o.s'); if (s && innerWidth >= 900) s.scrollIntoView({ block: 'nearest' });
+  oSel = v[Math.floor(Math.random() * v.length)].n; oChoisi = 1; ocSel.n = -1; voir(1);
 };
-$('o-sn').onclick = function () {
-  var n = OBJETS[oSel].n;
+function vuBascule(n) {
   if (E.vus[n]) { delete E.vus[n]; sauver(); }
   else { E.vus[n] = new Date().toLocaleDateString('fr-FR'); filante(); if (E.acquis[n]) { sauver(); bulle(n + ' de retour dans l’album.'); } else { E.acquis[n] = 1; gagner(10, n + ' dans l’album'); } }      /* les points d'un astre ne se gagnent qu'une fois */
-  voir();
-};
+}
+$('o-sn').onclick = function () { vuBascule(OBJETS[oSel].n); voir(); };
 $('o-vi').onclick = viserOuvre; $('vis-x').onclick = viserFerme;
 $('o-sc').querySelector('summary').onclick = function () { E.sc = !$('o-sc').open; sauver(); };
-$('o-calc').onclick = function () { montrer('tele'); $('t-calc').scrollIntoView({ block: 'start' }); };
+$('o-calc').onclick = function () { ficheFin(); montrer('tele'); $('t-calc').scrollIntoView({ block: 'start' }); };
 
 $('g-go').onclick = function () {
   if (roule) return; var x = contexte(), ok = [], i, n = 0, fait = faitJour();
@@ -964,25 +1143,25 @@ $('o-oc').onclick = function (e) { var b = e.target.closest('button'); if (b) { 
 $('t-pr').onclick = function (e) { var b = e.target.closest('button'); if (b) { E.tel.p = rang({ target: b }, this); teleRegle(); } };
 $('t-goto').onchange = function () { E.tel.goto = this.checked ? 1 : 0; teleRegle(); };
 $('t-sk').onclick = function (e) { var i = rang(e, this); if (i >= 0) { E.ciel = i; sauver(); tele(); } };
-$('t-du').onclick = function (e) { var i = rang(e, this); if (i >= 0) { E.duree = i; sauver(); tele(); } };
+$('t-du').onclick = function (e) { var i = rang(e, this); if (i >= 0) { E.duree = i; sauver(); tele(); if (page == 'soir') soiree(); } };
 $('t-oc').onclick = function (e) { var b = e.target.closest('button'); if (b) { E.tel.oc = E.tel.oc.filter(function (f) { return f != +b.dataset.f; }); teleRegle(); } };
 $('t-ocf').onsubmit = function (e) {
   e.preventDefault(); var f = Math.round(parseFloat(($('t-ocq').value || '').replace(',', '.')) * 10) / 10;
   if (!(f >= 3 && f <= 60)) return bulle('Une focale d’oculaire va de 3 à 60 mm : elle est gravée dessus.');
   if (E.tel.oc.indexOf(f) < 0) E.tel.oc.push(f); $('t-ocq').value = ''; teleRegle();
 };
-$('t-regl').onclick = function () { $('t-mat').scrollIntoView({ behavior: calme() ? 'auto' : 'smooth', block: 'start' }); };
-$('t-ls').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; oLive = 0; oT = +b.dataset.t; oSel = +b.dataset.n; oChoisi = 1; E.ins = 2; ocSel = { n: oSel, f: +b.dataset.f }; sauver(); montrer('voir'); var s = document.querySelector('#o-ls .o.s'); if (s && innerWidth >= 700) s.scrollIntoView({ block: 'nearest' }); };
+$('t-ls').onclick = function (e) { var b = e.target.closest('button'); if (!b) return; oLive = 0; oT = +b.dataset.t; oSel = +b.dataset.n; oChoisi = 1; E.ins = 2; ocSel = { n: oSel, f: +b.dataset.f }; sauver(); voir(1); ficheOuvre(1); };
 
 /* ---------- horloges ---------- */
 setInterval(rebours, 1e3);
 setInterval(function () {
   var now = Date.now(), n = nuitDe(now);
-  if (n.m != NU.m) { recalcul(); if (page == 'soir') soir(); if (page == 'tele') tele(); }            /* une nouvelle nuit commence : tout se recalcule ; le programme, lui, ne bouge pas tant qu'on le regarde */
+  if (n.m != NU.m) { recalcul(); tProg = null; if (page == 'soir') soir(); if (page == 'tele') tele(); }            /* une nouvelle nuit commence : tout se recalcule ; le programme, lui, ne bouge pas tant qu'on le regarde */
   else if (Math.floor(now / 36e5) != heureVue) { recalcul(); if (!hChoisie) selH = 0; if (page == 'soir') soir(); }      /* l'heure a tourné : meilleur moment et heure en cours suivent */
   entete();
-  if (page == 'carte') { if (cAuto && pos('so', now).alt < -6) { cAuto = 0; cLive = 1; } if (cLive) { if (now > cB) carteNuit(nuitDe(now)); cT = now; carteRend(); } }
-  if (page == 'voir' && oLive) voir();
+  rouge(); if (page == 'now') etapeHaut();
+  if (page == 'ciel') { if (cAuto && pos('so', now).alt < -6) { cAuto = 0; cLive = 1; } if (cLive) { if (now > cB) carteNuit(nuitDe(now)); cT = now; carteRend(); } }
+  if (page == 'ciel' && oLive && $('fiche').hidden) voir();
   if (page == 'soir') haut3();
 }, 3e4);
 setInterval(function () { if (document.visibilityState != 'hidden') meteo(); }, 18e5);
@@ -999,11 +1178,10 @@ if (window.MutationObserver) { var guet = new MutationObserver(function () { gue
 
 /* ---------- démarrage ---------- */
 regleTel(); fuseau(); recalcul();
-(function () { var h = '', i; for (i = 0; i < 50; i++) h += '<path d="M75 6v' + (i % 5 ? 4 : 7) + '" class="' + (i % 5 ? '' : 'fort') + '" transform="rotate(' + i * 7.2 + ' 75 75)"/>'; $('j-grad').innerHTML = h; })();
 var depart = (location.hash || '').slice(1);
-montrer(['carte', 'voir', 'tele', 'jeux'].indexOf(depart) >= 0 ? depart : 'soir');
+montrer(depart);
 meteo(); suivre();
-window.addEventListener('hashchange', function () { var h = location.hash.slice(1); if (['carte', 'voir', 'tele', 'jeux'].indexOf(h) < 0) h = 'soir'; if (h != page) montrer(h); });
+window.addEventListener('hashchange', function () { var h = pageDe(location.hash.slice(1)); if (h != page) montrer(h); });
 if (!E.accueil) feuille(1);
 if ('serviceWorker' in navigator && (location.protocol == 'https:' || location.hostname == 'localhost' || location.hostname == '127.0.0.1')) navigator.serviceWorker.register('sw.js').catch(function () { });
 })();
