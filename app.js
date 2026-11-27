@@ -46,7 +46,7 @@ function txt(s) { return String(s).replace(/[&<>"']/g, function (c) { return '&#
 var M = null, meteoEtat = 'attente';     /* attente, ok, vieille, absente */
 function cleMeteo() { return L().lat.toFixed(2) + ',' + L().lon.toFixed(2); }
 function meteo(force) {
-  var cle = cleMeteo(), c = lire(CLE_M), frais = c && c.cle == cle && Date.now() - c.maj < 27e5;
+  var cle = cleMeteo(), c = lire(CLE_M), frais = c && c.cle == cle && c.v == 2 && Date.now() - c.maj < 27e5;      /* v 2 : avec la veille ; une copie plus ancienne se redemande tout de suite */
   if (c && c.cle == cle) { M = c; meteoEtat = frais ? 'ok' : 'vieille'; fuseauMeteo(); if (!hChoisie) selH = 0; recalcul(); } else { M = null; meteoEtat = 'attente'; }
   if (frais && !force) { tout(); return Promise.resolve(); }
   if (typeof fetch != 'function') { meteoEtat = M ? 'vieille' : 'absente'; return Promise.resolve(); }
@@ -57,7 +57,7 @@ function meteo(force) {
     .then(function (j) {
       var h = j.hourly;
       if (!h || !h.time || !h.cloud_cover) throw new Error('réponse vide');
-      var m = { cle: cle, maj: Date.now(), t0: h.time[0] * 1e3, c: h.cloud_cover, lo: h.cloud_cover_low, mi: h.cloud_cover_mid, hi: h.cloud_cover_high, pp: h.precipitation_probability, te: h.temperature_2m, ro: h.dew_point_2m, ve: h.wind_speed_10m, tz: j.timezone };
+      var m = { v: 2, cle: cle, maj: Date.now(), t0: h.time[0] * 1e3, c: h.cloud_cover, lo: h.cloud_cover_low, mi: h.cloud_cover_mid, hi: h.cloud_cover_high, pp: h.precipitation_probability, te: h.temperature_2m, ro: h.dew_point_2m, ve: h.wind_speed_10m, tz: j.timezone };
       ecrire(CLE_M, m);
       if (cle != cleMeteo()) return;      /* le lieu a changé pendant l'attente */
       M = m; meteoEtat = 'ok'; fuseauMeteo(); if (!hChoisie) selH = 0; recalcul();
